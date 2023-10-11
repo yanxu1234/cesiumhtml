@@ -10,7 +10,8 @@
       <el-button  type="primary" @click="clearPlanes">一键清除飞机</el-button>
 
   </div>
-  <div id="cesiumContainer" style="height: 522px; width: 100%;">
+  <div id="cesiumContainer" style="height: 522px; width: 100%; position: relative;z-index: 1; ">
+    <div id="cesiumtooltip" style="position: absolute;  z-index: 99999;"></div>
   </div>  
  
 </template>
@@ -19,10 +20,8 @@
 import * as Cesium from "cesium";
 import { ref, onMounted ,computed,watch} from "vue";
  
-// import { PolylineTrailLinkMaterialProperty }   from '../stores/PolylineTrailLinkMaterialProperty.js'
+import  CustomLine    from '../stores/PolylineTrailLinkMaterialProperty.js'
 import store from '../stores/store.js';
-// iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms'); 
-// 访问状态
 // 访问状态
 const isCreatingMenuItem= computed(() => store.state.isCreatingMenuItem);
 const viewer = ref(null);  // 定义viewer为响应式数据
@@ -278,7 +277,7 @@ for (let lat = -80; lat <= 80; lat += 20) {
 
   
 // 抛物飞线效果
-parabolaFlowInit(viewer.value, 3);
+parabolaFlowInit(viewer.value);
 
 
   radaricon.value = viewer.value.entities.add({
@@ -368,7 +367,7 @@ for (let i = 0, l = provinceData.length; i < l; i++) {
 
     
 
-function parabolaFlowInit(_viewer, _num) {
+function parabolaFlowInit(_viewer) {
   let _center = [113.9236839, 22.528061];
   let _positions = [
     [130.8236839, 40.528061],
@@ -377,39 +376,96 @@ function parabolaFlowInit(_viewer, _num) {
 
   _positions.forEach((item) => {
     let _siglePositions = parabola(_center, item, 1000000);
-    // 创建飞线
-    // for (let i = 0; i < _num; i++) {
-    //   _viewer.entities.add({
-    //     polyline: {
-    //       positions: _siglePositions,
-    //       material: new Cesium.PolylineGlowMaterialProperty({
-    //         glowPower: 0.8,
-    //         color: Cesium.Color.RED.withAlpha(0.8),
-    //         // time: i * 0.03, // 设置不同的时间偏移量
-    //       }),
-    //     },
-    //   });
-    // }
-    // 创建轨迹线
-    _viewer.entities.add({
-      polyline: {
-        positions: _siglePositions,
-        material: new Cesium.Color(0.0, 1.0, 0.0, 0.8),
-        // material: new Cesium.PolylineTrailLinkMaterialProperty(Cesium.Color.RED,'/flowline.png', 2000),
-      },
-    });
+
+    // 创建流动抛物线
+     const tempOne = new CustomLine((callback) => {
+            const roadMaterial = new callback.Spriteline1MaterialProperty(2000, '/flowline.png');
+            // 创建流动线对象
+       const polyline = new Cesium.Entity({
+                polyline: new Cesium.PolylineGraphics({
+                    material: roadMaterial,
+                    // 线宽
+                    width: new Cesium.ConstantProperty(1),
+                    arcType: Cesium.ArcType.GEODESIC,
+                    // positions道路经过的坐标点集合
+                    positions:  _siglePositions,
+                }),
+               
+                
+       });
+      
+//抛物线飞机贴图
+       _viewer.entities.add({
+    show:true,
+  position: Cesium.Cartesian3.fromDegrees(113.9236839, 22.528061),
+  billboard: {
+    image: '/plane.png', // 设置贴图路径
+    scale:0.2
+         },
+  label: {
+            text: '\n speed:30km/s',
+       show: true,
+    scale: 0.8,
+      font: "20px sans-serif",
+      showBackground: true,//显示背景
+      // style: Cesium.LabelStyle.FILL,
+      backgroundColor:new Cesium.Color.fromCssColorString('#8b8784'),
+      horizontalOrigin: Cesium.HorizontalOrigin.LEFT,//对齐方式
+      verticalOrigin: Cesium.VerticalOrigin.CENTER,
+      pixelOffset: new Cesium.Cartesian2(50, -50),//设置偏移量
+ 
+    },
+       })
+
+             _viewer.entities.add(polyline);
+        })
+
   });
-  
-  /**
-   * @description: 抛物线构造函数（参考开源代码）
-   * @param {*}
-   * @return {*}
-   */
-  function parabola(startPosition, endPosition, height = 0, count = 50) {
+  // 创建信息框
+var tooltip = document.createElement("div");
+tooltip.className = "cesiumtooltip";
+cesiumtooltip.appendChild(tooltip);
+
+// 鼠标移动事件处理程序
+var handler = new Cesium.ScreenSpaceEventHandler(_viewer.canvas);
+handler.setInputAction(function (movement) {
+  // 获取鼠标位置
+  var position = movement.endPosition;
+
+  // 将鼠标位置转换为地理坐标
+  var cartesian = _viewer.camera.pickEllipsoid(
+    position,
+    _viewer.scene.globe.ellipsoid
+  );
+  if (cartesian) {
+    // 将地理坐标转换为地理经纬度
+    var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+    var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+    var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+
+    // 设置信息框的内容
+    tooltip.innerHTML =
+      "经度: " + longitude.toFixed(6) + "<br>纬度: " + latitude.toFixed(6);
+
+    // 设置信息框的位置
+    // tooltip.style.left = position.x + "px";
+    // tooltip.style.top = position.y - tooltip.offsetHeight + "px";
+    // tooltip.style.left ="10px";
+    // tooltip.style.top =  "10px";
+
+    // 显示信息框
+    tooltip.style.display = "block";
+  } else {
+    // 隐藏信息框
+    tooltip.style.display = "none";
+  }
+}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+  function parabola(startPosition, endPosition, height = 0, count = 50000) {//小bug 有重线 不重又无法接到地面
     //方程 y=-(4h/L^2)*x^2+h h:顶点高度 L：横纵间距较大者
     let result = [];
     height = Math.max(+height, 100);
-    count = Math.max(+count, 50);
+    count = Math.max(+count, 50000);
     let diffLon = Math.abs(startPosition[0] - endPosition[0]);
     let diffLat = Math.abs(startPosition[1] - endPosition[1]);
     let L = Math.max(diffLon, diffLat);
@@ -450,8 +506,6 @@ function parabolaFlowInit(_viewer, _num) {
     return result;
   }
 }
-
-
 
 function showPlaneglb() {
   plane.value.model.show = true;
@@ -561,4 +615,23 @@ function clearPlanes() {
 }
 </script>
 <style scoped> 
+#cesiumtooltip {
+  position: absolute;
+  z-index: 99999; /* 较高的 z-index 值，确保信息框位于其他元素之上 */
+  /* 其他样式属性 */
+  position: fixed;
+  z-index: 9999;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 10px;
+  font-size: 14px;
+  pointer-events: none;
+  border-radius: 4px;
+  /* border: 2px solid #ff0000; */
+}
+#cesiumContainer {
+  position: relative;
+  z-index: 1; /* 较低的 z-index 值，确保Cesium Viewer在信息框下方 */
+  /* 其他样式属性 */
+}
  </style>
