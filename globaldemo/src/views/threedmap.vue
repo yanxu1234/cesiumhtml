@@ -10,7 +10,7 @@
       <el-button  type="primary" @click="clearPlanes">一键清除飞机</el-button>
 
   </div>
-  <div id="cesiumContainer" style="height: 522px; width: 100%; position: relative;z-index: 1; ">
+  <div id="cesiumContainer" style="height: 522px; width: 100%;position: relative;z-index: 1; ">
     <div id="cesiumtooltip" style="position: absolute;  z-index: 99999;"></div>
   </div>  
  
@@ -402,33 +402,32 @@ function parabolaFlowInit(_viewer) {
     image: '/plane.png', // 设置贴图路径
     scale:0.2
          },
-  label: {
-            text: '\n speed:30km/s',
-       show: true,
-    scale: 0.8,
-      font: "20px sans-serif",
-      showBackground: true,//显示背景
-      // style: Cesium.LabelStyle.FILL,
-      backgroundColor:new Cesium.Color.fromCssColorString('#8b8784'),
-      horizontalOrigin: Cesium.HorizontalOrigin.LEFT,//对齐方式
-      verticalOrigin: Cesium.VerticalOrigin.CENTER,
-      pixelOffset: new Cesium.Cartesian2(50, -50),//设置偏移量
- 
-    },
+  // label: {
+  //           text: '\n speed:30km/s',
+  //      show: true,
+  //   scale: 0.8,
+  //     font: "20px sans-serif",
+  //     showBackground: true,//显示背景
+  //     // style: Cesium.LabelStyle.FILL,
+  //     backgroundColor:new Cesium.Color.fromCssColorString('#8b8784'),
+  //     horizontalOrigin: Cesium.HorizontalOrigin.LEFT,//对齐方式
+  //     verticalOrigin: Cesium.VerticalOrigin.CENTER,
+  //     pixelOffset: new Cesium.Cartesian2(50, -50),//设置偏移量
+  //   },
        })
-
              _viewer.entities.add(polyline);
         })
 
   });
   // 创建信息框
 var tooltip = document.createElement("div");
-tooltip.className = "cesiumtooltip";
+// tooltip.id = "cesiumtooltip";
 cesiumtooltip.appendChild(tooltip);
-
+var myDiv = document.getElementById("cesiumtooltip");
 // 鼠标移动事件处理程序
-var handler = new Cesium.ScreenSpaceEventHandler(_viewer.canvas);
-handler.setInputAction(function (movement) {
+  var handlerlonglat = new Cesium.ScreenSpaceEventHandler(_viewer.canvas);//经纬度
+// var handlerplaneroute = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);//航迹
+handlerlonglat.setInputAction(function (movement) {
   // 获取鼠标位置
   var position = movement.endPosition;
 
@@ -448,10 +447,9 @@ handler.setInputAction(function (movement) {
       "经度: " + longitude.toFixed(6) + "<br>纬度: " + latitude.toFixed(6);
 
     // 设置信息框的位置
-    // tooltip.style.left = position.x + "px";
-    // tooltip.style.top = position.y - tooltip.offsetHeight + "px";
-    // tooltip.style.left ="10px";
-    // tooltip.style.top =  "10px";
+    // myDiv.style.left = position.x + "px";
+    // myDiv.style.top = position.y - tooltip.offsetHeight + "px";
+ 
 
     // 显示信息框
     tooltip.style.display = "block";
@@ -460,6 +458,7 @@ handler.setInputAction(function (movement) {
     tooltip.style.display = "none";
   }
 }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
 
   function parabola(startPosition, endPosition, height = 0, count = 50000) {//小bug 有重线 不重又无法接到地面
     //方程 y=-(4h/L^2)*x^2+h h:顶点高度 L：横纵间距较大者
@@ -614,13 +613,16 @@ function clearPlanes() {
   planes.value = [];
 }
 </script>
-<style scoped> 
+<style > 
+#cesiumContainer {
+  position: relative;
+  z-index: 1; /* 较低的 z-index 值，确保Cesium Viewer在信息框下方 */
+  /* 其他样式属性 */
+}
 #cesiumtooltip {
   position: absolute;
   z-index: 99999; /* 较高的 z-index 值，确保信息框位于其他元素之上 */
   /* 其他样式属性 */
-  position: fixed;
-  z-index: 9999;
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
   padding: 10px;
@@ -628,10 +630,5 @@ function clearPlanes() {
   pointer-events: none;
   border-radius: 4px;
   /* border: 2px solid #ff0000; */
-}
-#cesiumContainer {
-  position: relative;
-  z-index: 1; /* 较低的 z-index 值，确保Cesium Viewer在信息框下方 */
-  /* 其他样式属性 */
 }
  </style>
