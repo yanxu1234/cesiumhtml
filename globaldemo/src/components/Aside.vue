@@ -2,6 +2,7 @@
   <div style="width: 150px; height: 100%;">
     <el-row class="tac">
     <el-col :span="24">
+      
       <el-menu
       style="min-height: 572px; overflow-y: scroll;max-height: 572px;"
         active-text-color="#ffd04b"
@@ -13,17 +14,17 @@
         @open="handleOpen"
         @close="handleClose"
       >
-        <el-sub-menu index="0">
+        <el-sub-menu index="0" >
           <template #title>
             <!-- <el-icon><location /></el-icon> -->
              <el-icon> <Place /></el-icon>
-            <span>标注</span>
+            <span @click="updatedigital">标注</span>
           </template>
           <el-menu-item-group title="Group One">
             <el-menu-item index="0-1" @click="showpoint"><el-icon><CaretRight /></el-icon>点</el-menu-item>
-            <el-menu-item index="0-2"><el-icon><CaretRight /></el-icon>线</el-menu-item>
-            <el-menu-item index="0-3"><el-icon><CaretRight /></el-icon>多边形</el-menu-item>
-            <el-menu-item index="0-4"><el-icon><CaretRight /></el-icon>圆形</el-menu-item>
+            <el-menu-item index="0-2" @click="showline"><el-icon><CaretRight /></el-icon>线</el-menu-item>
+            <el-menu-item index="0-3" @click="showpolygon"><el-icon><CaretRight /></el-icon>多边形</el-menu-item>
+            <el-menu-item index="0-4" @click="showcircle"><el-icon><CaretRight /></el-icon>圆形</el-menu-item>
             <el-menu-item index="0-5" @click="showrectangle"><el-icon><CaretRight /></el-icon>矩形</el-menu-item>
           </el-menu-item-group>
           <!-- <el-menu-item-group title="Group Two">
@@ -37,11 +38,11 @@
 
         <el-sub-menu index="1">
           <template #title><el-icon><Position /></el-icon>
-            <span>测量</span>
+            <span @click="updatedigital">测量</span>
           </template>
           <el-menu-item-group title="Group One">
-            <el-menu-item index="1-1"><el-icon><CaretRight /></el-icon>距离</el-menu-item>
-            <el-menu-item index="1-2"><el-icon><CaretRight /></el-icon>面积</el-menu-item>
+            <el-menu-item index="1-1" @click="measureLine"><el-icon><CaretRight /></el-icon>距离</el-menu-item>
+            <el-menu-item index="1-2" @click="measurePolygn"><el-icon><CaretRight /></el-icon>面积</el-menu-item>
           </el-menu-item-group>
         </el-sub-menu>
     
@@ -118,20 +119,26 @@ const handleClose = (key: string, keyPath: string[])=> {
   console.log(key, keyPath);
 };
 
-
-
 function showpoint() {
   updateIsCreatingMenuItem(1);
-console.log(isCreatingMenuItem)
+}
+function showline() {
+  updateIsCreatingMenuItem(2);
+} 
+function showpolygon() {
+  updateIsCreatingMenuItem(3);
+} 
+function showcircle() {
+  updateIsCreatingMenuItem(4);
+}  
+function showrectangle() {
+  updateIsCreatingMenuItem(5);
 }
 function showplane() {
-
   if (isPlaneCursor) {
     // 如果当前光标状态为飞机光标，则切换回正常鼠标
     document.body.style.cursor = 'auto';
     updateIsCreatingMenuItem(-1);
-    console.log(isCreatingMenuItem)
-
   } else {
     updateIsCreatingMenuItem(41);
     // 如果当前光标状态为正常鼠标，则设置为飞机光标
@@ -143,14 +150,12 @@ function showplane() {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
-
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         console.error("Could not get 2D context.");
         return;
       }
       ctx.drawImage(img, 0, 0, width, height);
-
       document.body.style.cursor = `url(${canvas.toDataURL()}), auto`;
     };
   }
@@ -245,9 +250,14 @@ function showtank() {
   // 切换光标状态
   isTank = !isTank;
 }
-    
-function showrectangle() {
-  updateIsCreatingMenuItem(5);
-}
 
+function updatedigital() {
+   updateIsCreatingMenuItem(-1);
+}
+function measureLine() {
+   updateIsCreatingMenuItem(11);
+}
+function measurePolygn() {
+   updateIsCreatingMenuItem(12);
+}
 </script>
