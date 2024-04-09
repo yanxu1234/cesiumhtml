@@ -8,6 +8,8 @@
     <el-button type="primary" @click="change3D">三维显示</el-button>
     <el-button type="primary" @click="clear">一键清除飞机</el-button>
     <el-button type="primary" @click="loadsatellite">加载卫星</el-button>
+    <el-button id="editbtn" type="primary" @click="updateradar">更改雷达参数</el-button>
+
   </div>
   <div
     id="cesiumContainer"
@@ -23,15 +25,18 @@
 
 <script setup>
 import * as Cesium from "cesium";
-import axios from 'axios'
 import * as satellite from 'satellite.js';
 import moment from 'moment';
 import julian from 'julian';
 
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, computed, watch,reactive } from "vue";
 import CustomLine from "../stores/PolylineTrailLinkMaterialProperty.js";
 import store from "../stores/store.js";
 import Entitys from '../stores/entitys.js';
+
+import StraightArrow from '../stores/StraightArrow';
+import AttackArrow from '../stores/AttackArrow';
+import PincerArrow from '../stores/PincerArrow';
 // 访问状态
 const isCreatingMenuItem = computed(() => store.state.isCreatingMenuItem);
 const viewer = ref(null); // 定义viewer为响应式数据
@@ -48,7 +53,15 @@ const lines = ref([]);//存储线实体数组
 const polygons = ref([]);//存储多边形实体数组
 const circles = ref([]);//存储圆实体数组
 const rectangles= ref([]);//存储矩形实体数组
-
+const labelsen = ref([]);//存储label
+const plottingObj = reactive({
+  straightArrow: null,
+  attackArrow: null,
+  pincerArrow: null,
+  straightDrawArr: [],
+  attackDrawArr: [],
+  pincerDrawArr: [],
+});
 
 const planes = ref([]); //存储飞机实体数组
 const missiles = ref([]);//存储导弹实体数组
@@ -124,6 +137,30 @@ onMounted(() => {
             handleArr.value = [];
         }
      onMouseClick05()
+    }
+    else if (newVal === 6) {
+      // 移除所有事件监听器
+     if(handleArr.value.length > 0){
+            for(let i in handleArr.value) handleArr.value[i].destroy();
+            handleArr.value = [];
+        }
+     onMouseClick06()
+    }
+     else if (newVal === 7) {
+      // 移除所有事件监听器
+     if(handleArr.value.length > 0){
+            for(let i in handleArr.value) handleArr.value[i].destroy();
+            handleArr.value = [];
+        }
+     onMouseClick07()
+    }
+     else if (newVal ===8) {
+      // 移除所有事件监听器
+     if(handleArr.value.length > 0){
+            for(let i in handleArr.value) handleArr.value[i].destroy();
+            handleArr.value = [];
+        }
+     onMouseClick08()
     }
     else if (newVal === 11) {
       // 移除所有事件监听器
@@ -1443,6 +1480,35 @@ function onMouseClick05() {//画矩形
             }
         },Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 }
+function onMouseClick06() {//直角
+   if ( !plottingObj.straightArrow) {
+            plottingObj.straightArrow = new StraightArrow(viewer.value);
+     plottingObj.straightArrow.startDraw();
+            plottingObj.straightDrawArr.push(plottingObj.straightArrow);
+  }
+  //  else {
+  //     for (var i = 0; i < plottingObj.straightDrawArr.length; i++) {
+  //               plottingObj.straightDrawArr[i].clear();
+  // }
+  //           plottingObj.straightArrow = null;
+  //           plottingObj.straightDrawArr = [];
+  //   }   
+}
+function onMouseClick07() {//攻击
+  if (!plottingObj.attackArrow) {
+            plottingObj.attackArrow = new AttackArrow(viewer.value);
+            plottingObj.attackArrow.startDraw();
+           plottingObj.attackDrawArr.push(plottingObj.attackArrow);
+        } 
+        
+}
+function onMouseClick08() {//钳形
+  if (!plottingObj.pincerArrow) {
+            plottingObj.pincerArrow = new PincerArrow(viewer.value);
+            plottingObj.pincerArrow.startDraw();
+            plottingObj.pincerDrawArr.push(plottingObj.pincerArrow);
+        } 
+}
 function onMouseClick11() {//测量距离
   var PolyLinePrimitive = (function () {
             function _(positions) {
@@ -1450,8 +1516,8 @@ function onMouseClick11() {//测量距离
                     polyline: {
                         show: true,
                         positions: [],
-                        material: Cesium.Color.CHARTREUSE,
-                        width: 5,
+                        material: Cesium.Color.DARKRED,
+                        width: 3,
                         clampToGround: true
                     },
                     
@@ -1468,13 +1534,48 @@ function onMouseClick11() {//测量距离
                 //实时更新polyline.positions
                 this.options.polyline.positions = new Cesium.CallbackProperty(_update, false);
                 lines.value.push(viewer.value.entities.add(this.options));
-            };
+    };
+            _.prototype._calculateDistance = function () {
+                var totalDistance = 0;
+                for (var i = 1; i < this.positions.length; i++) {
+                totalDistance += Cesium.Cartesian3.distance(
+                this.positions[i - 1],
+                this.positions[i]
+          );
+        }
+        return totalDistance;
+      };
+
+      _.prototype._createDistanceLabel = function (distance) {
+        var labels = viewer.value.entities;
+        if (Cesium.defined(this.distanceLabel)) {
+          labels.remove(this.distanceLabel);
+        }
+        this.distanceLabel = labels.add({
+          position: this.positions[this.positions.length - 1],
+          label: {
+            text: distance.toFixed(2) + " m",
+            font: "14px sans-serif",
+            fillColor: Cesium.Color.YELLOW,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new Cesium.Cartesian2(0, -20),
+            showBackground: true,
+            backgroundColor: Cesium.Color.BLACK.withAlpha(0.7)
+          }
+        });
+        labelsen.value.push( this.distanceLabel );
+      };
             return _;
-        })();
+  })();
+        
         var handler02 = new Cesium.ScreenSpaceEventHandler(viewer.value.scene.canvas);
         handleArr.value.push(handler02);
         var positions = [];
         var poly = undefined;
+
+        var totalDistance = 0;
         //鼠标左键单击画点
         handler02.setInputAction(function (movement) {
             var cartesian = viewer.value.scene.camera.pickEllipsoid(movement.position, viewer.value.scene.globe.ellipsoid);
@@ -1493,7 +1594,10 @@ function onMouseClick11() {//测量距离
                     if(cartesian != undefined){
                         positions.pop();
                         cartesian.y += (1 + Math.random());
-                        positions.push(cartesian);
+                      positions.push(cartesian);
+
+                      totalDistance = poly._calculateDistance();
+                      poly._createDistanceLabel(totalDistance);
                     }
                 }
             }
@@ -1505,8 +1609,180 @@ function onMouseClick11() {//测量距离
         }
             }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
 }
-function onMouseClick12() {//测量面积
-  
+function onMouseClick12() {
+  var PolygonPrimitive = (() => {
+            function _(positions) {
+                this.options = {
+                    name: '多边形',
+                    polygon: {
+                        hierarchy: [],
+                        perPositionHeight: true,
+                        //fill:false,
+                        outline : false,
+                        outlineWidth: 10.0,
+                        material : Cesium.Color.fromCssColorString('#03A9F4').withAlpha(0.01),
+                        outlineColor : Cesium.Color.CHARTREUSE,
+                        clampToGround: true
+                    }
+                };
+                this.hierarchy = positions;
+                this._init();
+            }
+
+            _.prototype._init = function () {
+                var _self = this;
+                var _update = function () {
+                    return new Cesium.PolygonHierarchy(_self.hierarchy);
+                };
+                //实时更新polygon.hierarchy
+                this.options.polygon.hierarchy = new Cesium.CallbackProperty(_update, false);
+                polygons.value.push(viewer.value.entities.add(this.options));
+            };
+            return _;
+        })();
+   // 鼠标事件
+  var handler12 = new Cesium.ScreenSpaceEventHandler(viewer.value.scene.canvas);
+  handleArr.value.push(handler12);
+  var positions = [];
+  var tempPoints = [];
+  var poly = null;
+  var cartesian = null;
+  handler12.setInputAction(function (movement) {
+    // let ray = viewer.value.camera.getPickRay(movement.endPosition);
+    cartesian = viewer.value.scene.camera.pickEllipsoid(movement.endPosition, viewer.value.scene.globe.ellipsoid);
+    positions.pop(); //移除最后一个  以上一个点为结束  
+    positions.push(cartesian);
+    if (positions.length >= 2) {
+      poly = new PolygonPrimitive(positions);
+    }
+  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+  handler12.setInputAction(function (movement) {
+    // let ray = viewer.value.camera.getPickRay(movement.position);
+     cartesian = viewer.value.scene.camera.pickEllipsoid(movement.position, viewer.value.scene.globe.ellipsoid);
+
+    if (positions.length == 0) {
+      positions.push(cartesian.clone());
+    }
+    positions.push(cartesian);
+    //在三维场景中添加点
+    var cartographic = Cesium.Cartographic.fromCartesian(
+      positions[positions.length - 1]
+    );
+    var longitudeString = Cesium.Math.toDegrees(cartographic.longitude);
+    var latitudeString = Cesium.Math.toDegrees(cartographic.latitude);
+    var heightString = cartographic.height;
+    var labelText =
+      "(" + longitudeString.toFixed(2) + "," + latitudeString.toFixed(2) + ")";
+    tempPoints.push({
+      lon: longitudeString,
+      lat: latitudeString,
+      hei: heightString,
+    });
+    const floatpoint=viewer.value.entities.add({
+      name: "多边形面积",
+      position: positions[positions.length - 1],
+      point: {
+        pixelSize: 5,
+        color: Cesium.Color.RED,
+        outlineColor: Cesium.Color.WHITE,
+        outlineWidth: 2,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+      },
+      label: {
+        text: labelText,
+        font: "15px sans-serif",
+        fillColor: Cesium.Color.GOLD,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        outlineWidth: 2,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        pixelOffset: new Cesium.Cartesian2(0, -10),
+      },
+    });
+    points.value.push(floatpoint);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  handler12.setInputAction(function (movement) {
+    if (handleArr.value.length > 0) {
+      for (let i in handleArr.value) handleArr.value[i].destroy();
+      handleArr.value = [];
+    }
+    positions.pop();
+    var textArea = getArea(tempPoints) + "平方公里";
+   const area= viewer.value.entities.add({
+      name: "多边形面积",
+      position: positions[positions.length - 1],
+      label: {
+        text: textArea,
+        font: "15px sans-serif",
+        fillColor: Cesium.Color.GOLD,
+        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+        outlineWidth: 2,
+        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+        pixelOffset: new Cesium.Cartesian2(20, -50),
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+      },
+   });
+    labelsen.value.push(area);
+  }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+  var radiansPerDegree = Math.PI / 180.0; //角度转化为弧度(rad)
+  var degreesPerRadian = 180.0 / Math.PI; //弧度转化为角度
+  //计算多边形面积
+  function getArea(points) {
+    var res = 0;
+    //拆分三角曲面
+    for (var i = 0; i < points.length - 2; i++) {
+      var j = (i + 1) % points.length;
+      var k = (i + 2) % points.length;
+      var totalAngle = Angle(points[i], points[j], points[k]);
+      var dis_temp1 = distance(positions[i], positions[j]);
+      var dis_temp2 = distance(positions[j], positions[k]);
+      res += dis_temp1 * dis_temp2 * Math.abs(Math.sin(totalAngle));
+    }
+    return (res / 1000000.0).toFixed(4);
+  }
+
+  /*角度*/
+  function Angle(p1, p2, p3) {
+    var bearing21 = Bearing(p2, p1);
+    var bearing23 = Bearing(p2, p3);
+    var angle = bearing21 - bearing23;
+    if (angle < 0) {
+      angle += 360;
+    }
+    return angle;
+  }
+  /*方向*/
+  function Bearing(from, to) {
+    var lat1 = from.lat * radiansPerDegree;
+    var lon1 = from.lon * radiansPerDegree;
+    var lat2 = to.lat * radiansPerDegree;
+    var lon2 = to.lon * radiansPerDegree;
+    var angle = -Math.atan2(
+      Math.sin(lon1 - lon2) * Math.cos(lat2),
+      Math.cos(lat1) * Math.sin(lat2) -
+        Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon1 - lon2)
+    );
+    if (angle < 0) {
+      angle += Math.PI * 2.0;
+    }
+    angle = angle * degreesPerRadian; //角度
+    return angle;
+  }
+
+  function distance(point1, point2) {
+    var point1cartographic = Cesium.Cartographic.fromCartesian(point1);
+    var point2cartographic = Cesium.Cartographic.fromCartesian(point2);
+    /**根据经纬度计算出距离**/
+    var geodesic = new Cesium.EllipsoidGeodesic();
+    geodesic.setEndPoints(point1cartographic, point2cartographic);
+    var s = geodesic.surfaceDistance;
+    //返回两点之间的距离
+    s = Math.sqrt(
+      Math.pow(s, 2) +
+        Math.pow(point2cartographic.height - point1cartographic.height, 2)
+    );
+    return s;
+  }
 }
 function onMouseClick41() {
   var handle41 = new Cesium.ScreenSpaceEventHandler(viewer.value.canvas); 
@@ -1661,6 +1937,27 @@ function clear() {
   rectangles.value.forEach((rectangle) => {
     viewer.value.entities.remove(rectangle);
   });
+  rectangles.value = [];
+   labelsen.value.forEach((label) => {
+    viewer.value.entities.remove(label);
+   });
+  //删除箭头
+  for (var i = 0; i < plottingObj.straightDrawArr.length; i++) {
+                plottingObj.straightDrawArr[i].clear();
+  }
+  for (var i = 0; i < plottingObj.attackDrawArr.length; i++) {
+                plottingObj.attackDrawArr[i].clear();
+  }
+  for (var i = 0; i <plottingObj.pincerDrawArr.length; i++) {
+                plottingObj.pincerDrawArr[i].clear();
+   }
+            plottingObj.pincerArrow = null;
+            plottingObj.pincerDrawArr = [];
+            plottingObj.attackArrow = null;
+            plottingObj.attackDrawArr = [];
+            plottingObj.straightArrow = null;
+            plottingObj.straightDrawArr = [];
+        
   rectangles.value = [];
   planes.value.forEach((plane) => {
     viewer.value.entities.remove(plane);

@@ -10,15 +10,16 @@
         class="el-menu-vertical-demo"
         default-active="3"
         text-color="#fff"
-        :default-openeds="['1']"
         @open="handleOpen"
         @close="handleClose"
+        
       >
+<!-- :default-openeds="['1']" //默认展开项-->
         <el-sub-menu index="0" >
           <template #title>
             <!-- <el-icon><location /></el-icon> -->
              <el-icon> <Place /></el-icon>
-            <span @click="updatedigital">标注</span>
+            <span @click="updatedigital">标绘</span>
           </template>
           <el-menu-item-group title="Group One">
             <el-menu-item index="0-1" @click="showpoint"><el-icon><CaretRight /></el-icon>点</el-menu-item>
@@ -26,6 +27,9 @@
             <el-menu-item index="0-3" @click="showpolygon"><el-icon><CaretRight /></el-icon>多边形</el-menu-item>
             <el-menu-item index="0-4" @click="showcircle"><el-icon><CaretRight /></el-icon>圆形</el-menu-item>
             <el-menu-item index="0-5" @click="showrectangle"><el-icon><CaretRight /></el-icon>矩形</el-menu-item>
+            <el-menu-item index="0-6" @click="showstraightarrow"><el-icon><CaretRight /></el-icon>直角箭头</el-menu-item>
+            <el-menu-item index="0-7" @click="showattackarrow"><el-icon><CaretRight /></el-icon>攻击箭头</el-menu-item>
+            <el-menu-item index="0-8" @click="showpincerarrow"><el-icon><CaretRight /></el-icon>钳形箭头</el-menu-item>
           </el-menu-item-group>
           <!-- <el-menu-item-group title="Group Two">
             <el-menu-item index="1-3">item three</el-menu-item>
@@ -40,7 +44,7 @@
           <template #title><el-icon><Position /></el-icon>
             <span @click="updatedigital">测量</span>
           </template>
-          <el-menu-item-group title="Group One">
+          <el-menu-item-group title="Group Two">
             <el-menu-item index="1-1" @click="measureLine"><el-icon><CaretRight /></el-icon>距离</el-menu-item>
             <el-menu-item index="1-2" @click="measurePolygn"><el-icon><CaretRight /></el-icon>面积</el-menu-item>
           </el-menu-item-group>
@@ -67,7 +71,7 @@
 
         <el-menu-item index="5">
           <el-icon><Moon /></el-icon>
-          <span>静态目标</span>
+          <span>雷达波束</span>
         </el-menu-item>
 
         <el-menu-item index="6">
@@ -77,7 +81,7 @@
 
         <el-menu-item index="7">
          <el-icon><Orange /></el-icon>
-          <span>雷达波束</span>
+          <span>静态目标</span>
         </el-menu-item>
         
         <el-menu-item index="/test"  @click="this.$router.push('/Home')">
@@ -133,6 +137,15 @@ function showcircle() {
 }  
 function showrectangle() {
   updateIsCreatingMenuItem(5);
+}
+function showstraightarrow() {
+  updateIsCreatingMenuItem(6);
+}
+function showattackarrow() {
+  updateIsCreatingMenuItem(7);
+}
+function showpincerarrow() {
+  updateIsCreatingMenuItem(8);
 }
 function showplane() {
   if (isPlaneCursor) {
