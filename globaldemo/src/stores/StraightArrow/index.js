@@ -124,7 +124,7 @@ export default class {
                     $this.positions.pop();
                     $this.positions.push(cartesian);
                 }
-                $this.entitys.showTip($this._resultTip,true,cartesian,'鼠标右键结束,平板长按结束');
+                $this.entitys.showTip($this._resultTip,true,cartesian,'点击结束');
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
     }

@@ -131,7 +131,7 @@ export default class {
                     $this.positions.pop();
                     $this.positions.push(cartesian);
                 }
-                $this.entitys.showTip($this._resultTip,true,cartesian,'点击地图结束');
+                $this.entitys.showTip($this._resultTip,true,cartesian,'右键点击地图结束');
             }
         }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
         this.handler.setInputAction((evt) => { //右击结束绘制

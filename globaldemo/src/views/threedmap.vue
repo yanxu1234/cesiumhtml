@@ -1,4 +1,5 @@
 <template>
+   
   <div style="margin: 10px 5px; width: 100%; height: 100%">
     <el-button type="primary" @click="showFlightPath">显示飞机轨迹</el-button>
     <el-button type="primary" @click="hideFlightPath">隐藏飞机轨迹</el-button>
@@ -6,10 +7,99 @@
     <el-button type="primary" @click="hideChinaEdge">隐藏中国边界</el-button>
     <el-button type="primary" @click="change2D">二维显示</el-button>
     <el-button type="primary" @click="change3D">三维显示</el-button>
-    <el-button type="primary" @click="clear">一键清除飞机</el-button>
+    <el-button type="primary" @click="clear">一键清除</el-button>
     <el-button type="primary" @click="loadsatellite">加载卫星</el-button>
-    <el-button id="editbtn" type="primary" @click="updateradar">更改雷达参数</el-button>
+    <!-- <el-button type="primary" @call-function="test">测试</el-button> -->
+    
+    <!-- <el-button id="editbtn" type="primary" @click="updateradar">更改雷达参数</el-button> -->
+    <!-- <el-button type="primary" @click="dialogFormVisible = true">更改雷达参数</el-button> -->
 
+      <el-dialog v-model="dialogFormVisible" title="雷达参数" width="600" style="background-color: #f0f0f0;">
+    <el-form :model="form">
+     <el-row>
+  <el-col :span="24">
+    <el-form :model="form" :label-width="formLabelWidth" inline>
+      <el-form-item label="经度" :label-width=60>
+        <el-input v-model="form.longitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="纬度" :label-width=60>
+        <el-input v-model="form.latitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="高度" :label-width=60>
+        <el-input v-model="form.altitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+     <el-row>
+  <el-col :span="24">
+    <el-form :model="form" :label-width="formLabelWidth" inline>
+      <el-form-item label="偏航角" :label-width=60>
+        <el-input v-model="form.heading" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="俯仰角" :label-width=60>
+        <el-input v-model="form.pitch" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="翻滚角" :label-width=60>
+        <el-input v-model="form.roll" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+<el-row>
+  <el-col :span="24">
+    <el-form :model="form" :label-width="formLabelWidth" inline>
+      <el-form-item label="内部半径m" :label-width=120>
+        <el-input v-model="form.innerradius" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="外部半径m" :label-width=120>
+        <el-input v-model="form.outradius" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+<el-row>
+  <el-col :span="24">
+    <el-form :model="form" :label-width="formLabelWidth" inline>
+      <el-form-item label="最小钟面角" :label-width=120>
+        <el-input v-model="form.miniclock" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="最大钟面角" :label-width=120>
+        <el-input v-model="form.maxclock" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+<el-row>
+  <el-col :span="24">
+    <el-form :model="form" :label-width="formLabelWidth" inline>
+      <el-form-item label="最小锥角" :label-width=120>
+        <el-input v-model="form.minicone" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="最大锥角" :label-width=120>
+        <el-input v-model="form.maxcone" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+    <el-form-item label="材质颜色" :label-width=120>
+      <el-select v-model="form.color" placeholder="请选择颜色">
+        <el-option label="红色" value="#ff0000"></el-option>
+        <el-option label="黄色" value="#ffff00"></el-option>
+        <el-option label="白色" value="#ffffff"></el-option>
+        <el-option label="蓝色" value="#0000ff"></el-option>
+        <el-option label="紫色" value="#800080"></el-option>
+      </el-select>
+    </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="() => { confirm(true); dialogFormVisible = false; }"> 确认 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+   
   </div>
   <div
     id="cesiumContainer"
@@ -37,6 +127,10 @@ import Entitys from '../stores/entitys.js';
 import StraightArrow from '../stores/StraightArrow';
 import AttackArrow from '../stores/AttackArrow';
 import PincerArrow from '../stores/PincerArrow';
+
+import eventBus from '../stores/eventBus.js';
+
+
 // 访问状态
 const isCreatingMenuItem = computed(() => store.state.isCreatingMenuItem);
 const viewer = ref(null); // 定义viewer为响应式数据
@@ -65,9 +159,10 @@ const plottingObj = reactive({
 
 const planes = ref([]); //存储飞机实体数组
 const missiles = ref([]);//存储导弹实体数组
-const radars = ref([]);//存储雷达实体数组
+const radarsicon= ref([]);//存储雷达图标实体数组
 const  tanks= ref([]);//存储坦克实体数组
 
+const radars = ref([]);//存储雷达实体
 const radaricon = ref(null); //存储雷达图标实例
 // 定义事件类型和处理函数
 const handleArr = ref([]);//实体加载事件响应数组
@@ -82,15 +177,37 @@ let scale = 1;
 var drawingRectangle = false;
 var startPosition;
 var endPosition;
-// const terrainProvider = new Cesium.CesiumTerrainProvider({  url: 'https://data.marsgis.cn/terrain'});
-// var iframe = document.getElementsByClassName('cesium-infoBox-iframe')[0];
-// iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups allow-forms');
-// iframe.setAttribute('src', ''); //必须设置src为空 否则不会生效。
+
+// const dialogTableVisible = ref(false)
+const dialogFormVisible = ref(false)
+const formLabelWidth = '600px'
+
+const form = reactive({//雷达参数对话框
+  longitude:0.0,
+  latitude: 0.0,
+  altitude:0.0,
+  heading: 0.0,
+  pitch: 0.0,
+  roll: 0.0,
+  innerradius: 0.0,
+  outradius: 0.0,
+  miniclock: 0.0,
+  maxclock: 0.0,
+  minicone: 0.0,
+  maxcone: 0.0,
+  color: '',
+
+})
 
 
 onMounted(() => {
   initializeCesium();
-
+  eventBus.on("updateradar", () => {
+    showradardialog();
+  });
+ eventBus.on("showsatellite", () => {
+    loadsatellite();
+  });
   watch(isCreatingMenuItem, (newVal) => {
     if (newVal === -1) {
       if(handleArr.value.length > 0){
@@ -225,6 +342,8 @@ onMounted(() => {
   iframe.setAttribute("src", "");
 });
 
+
+
 function initializeCesium() {
   // cesium token
   Cesium.Ion.defaultAccessToken =
@@ -358,132 +477,8 @@ function initializeCesium() {
     },
   });
 
-  var targetPosition = Cesium.Cartesian3.fromDegrees(
-    117.283043,
-    31.861191,
-    2000
-  );
-  viewer.value.entities.add({
-    name: "雷达四凌锥体",
-    position: targetPosition,
-    orientation: Cesium.Transforms.headingPitchRollQuaternion(
-      targetPosition,
-      new Cesium.HeadingPitchRoll(
-        Cesium.Math.toRadians(100),
-        Cesium.Math.toRadians(90),
-        90
-      )
-    ),
-    ellipsoid: {
-      radii: new Cesium.Cartesian3(600000, 600000, 600000),
-      innerRadii: new Cesium.Cartesian3(1000, 1000, 1000),
-      minimumClock: Cesium.Math.toRadians(-15),
-      maximumClock: Cesium.Math.toRadians(-60),
-      minimumCone: Cesium.Math.toRadians(75),
-      maximumCone: Cesium.Math.toRadians(105),
-      material: Cesium.Color.fromCssColorString("#f33349").withAlpha(0.1),
-      outline: true,
-    },
-  });
-
-
-    // viewer.value.dataSources
-    // .add(Cesium.CzmlDataSource.load(czml))
-    // .then((dataSource) => {
-    //   const satellite = dataSource.entities.getById("007");
-    //   console.log(111)
-    // });
-
-  // viewer.value.dataSources
-  //   .add(Cesium.CzmlDataSource.load("/data.czml"))
-  //   .then((dataSource) => {
-  //     const satellite = dataSource.entities.getById("Satellite-MEO9");
-  //     //  viewer.clock.onTick.addEventListener((tick) => {
-  //     //       targetPosition = satellite._position.getValue(tick.currentTime)
-  //     //       if(!targetPosition) {
-  //     //         return
-  //     //       }
-  //     //     })
-  //   });
-
-  //  viewer.value.scene.globe.depthTestAgainstTerrain = true;//开启深度测试考虑了地形的高度
-  // // 创建飞机轨迹
-  // const positions = [
-  //   Cesium.Cartesian3.fromDegrees(116.4074, 39.9042, 0),
-  //   Cesium.Cartesian3.fromDegrees(-74.0059, 40.7128, 0),
-  //   // 添加更多的轨迹点
-  // ];
-  // let LineInstanceArr = [];
-
-  // // 定义折线几何
-  // let polyline = new Cesium.PolylineGeometry({
-  //   positions: positions,
-  //   width: 1.0,
-  //   vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
-  // });
-
-  // var LineInstance = new Cesium.GeometryInstance({
-  //   geometry: polyline,
-  //   attributes: {
-  //     color: Cesium.ColorGeometryInstanceAttribute.fromColor(Cesium.Color.RED),
-  //   },
-  // });
-
-  // LineInstanceArr.push(LineInstance);
-
-  // // 创建飞行路径实例
-  // line.value = new Cesium.Primitive({
-  //   geometryInstances: LineInstanceArr,
-  //   appearance: new Cesium.PolylineColorAppearance({
-  //     translucent: false,
-  //   }),
-  //   asynchronous: false,
-  //   show: false
-  // });
-
-  // viewer.value.scene.primitives.add(line.value);
-
-  // // 将摄像机定位到飞机位置
-  // viewer.value.scene.camera.flyTo({
-  //   destination: Cesium.Cartesian3.fromDegrees(116.4074, 39.9042, 20070050),
-  //   orientation: {
-  //     heading: Cesium.Math.toRadians(0),
-  //     pitch: Cesium.Math.toRadians(-90),
-  //     roll: 0,
-  //   },
-  // });
-
-  // const redCone = viewer.value.entities.add({
-  //   name: "Red cone",
-  //   position: Cesium.Cartesian3.fromDegrees(117.283043,31.861191),
-  //   cylinder: {
-  //     length: 400000.0,
-  //     topRadius: 200000.0,
-  //     bottomRadius: 0.0,
-  //     material: Cesium.Color.RED.withAlpha(0.5), // 设置透明度为0.5
-  //   },
-  //   });
-  // 创建一个点，viewer.entities.add返回一个实体对象
-  // let point = viewer.value.entities.add({
-  //   id: 'point',
-  //   position: Cesium.Cartesian3.fromDegrees(117.283043,31.861191,500000), // 经纬度转笛卡尔坐标
-  //   point: {
-  //     pixelSize: 7, //以像素为单位指定大小
-  //     color: Cesium.Color.BLUE // 指定该点的 Color
-  //   }
-  // })
-
   // 抛物飞线效果
   parabolaFlowInit(viewer.value);
-
-  radaricon.value = viewer.value.entities.add({
-    show: true,
-    position: Cesium.Cartesian3.fromDegrees(117.283043, 31.861191),
-    billboard: {
-      image: "/radar.png", // 设置贴图路径
-      scale: 0.03,
-    },
-  });
   //  边界实例
   chinaDataSource.value = new Cesium.GeoJsonDataSource("ChinaDataSource");
   viewer.value.dataSources.add(chinaDataSource.value);
@@ -729,18 +724,6 @@ function initializeCesium() {
     .catch((error) => {
       console.error("Failed to load China geojson.", error);
     });
-
-
- 
-  //   //获取tle数据
-  // axios.get('../tleTest.json').then((res) => {
-  //   tleData.value = res.data.data
-  //   // console.log(tleData, 'ttt')
-  //   viewer.value.clock.shouldAnimate = true
-  //   satlliteTest()
-  // })
-  // }
-  // getTLE();
 
 }
 
@@ -1126,7 +1109,55 @@ function change3D() {
   sceneMode.value = Cesium.SceneMode.SCENE2D; // 切换为三维场景模式
   viewer.value.scene.morphTo3D(1);
 }
+function confirm() {
 
+// 在需要的时候，将参数转换为number类型
+form.longitude = convertToNumber(form.longitude);
+form.latitude = convertToNumber(form.latitude);
+form.altitude = convertToNumber(form.altitude);
+form.heading = convertToNumber(form.heading);
+form.pitch = convertToNumber(form.pitch);
+form.roll = convertToNumber(form.roll);
+form.innerradius = convertToNumber(form.innerradius);
+form.outradius = convertToNumber(form.outradius);
+form.miniclock = convertToNumber(form.miniclock);
+form.maxclock = convertToNumber(form.maxclock);
+form.minicone = convertToNumber(form.minicone);
+form.maxcone = convertToNumber(form.maxcone);
+   var targetPosition = Cesium.Cartesian3.fromDegrees(
+    form.longitude,
+    form.latitude,
+    form.altitude
+  );
+  const radar=viewer.value.entities.add({
+    name: "雷达四凌锥体",
+    position: targetPosition,
+    billboard: {
+      image: "/radar.png", // 设置贴图路径
+      scale: 0.03,
+    },
+    orientation: Cesium.Transforms.headingPitchRollQuaternion(
+      targetPosition,
+      new Cesium.HeadingPitchRoll(
+        Cesium.Math.toRadians(form.heading),
+        Cesium.Math.toRadians(form.pitch),
+        form.roll
+      )
+    ),
+    ellipsoid: {
+      radii: new Cesium.Cartesian3(form.outradius, form.outradius, form.outradius),
+      innerRadii: new Cesium.Cartesian3(form.innerradius, form.innerradius, form.innerradius),
+      minimumClock: Cesium.Math.toRadians(-form.miniclock),
+      maximumClock: Cesium.Math.toRadians(-form.maxclock),
+      minimumCone: Cesium.Math.toRadians(form.minicone),
+      maximumCone: Cesium.Math.toRadians(form.maxcone),
+      material: Cesium.Color.fromCssColorString(form.color).withAlpha(0.1),
+      outline: true,
+    },
+  });
+  radars.value.push(radar);
+
+}
 function onMouseClick01() {
   var handle01 = new Cesium.ScreenSpaceEventHandler(viewer.value.canvas); 
   handleArr.value.push(handle01);
@@ -1879,7 +1910,7 @@ function onMouseClick43() { //画雷达
         scale:0.05
       }
     });
-    radars.value.push(newRadar);
+    radarsicon.value.push(newRadar);
   }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 }
@@ -1967,6 +1998,10 @@ function clear() {
     viewer.value.entities.remove(missile);
   });
   missiles.value = [];
+  radarsicon.value.forEach((radar) => {
+    viewer.value.entities.remove(radar);
+  });
+  radarsicon.value = [];
   radars.value.forEach((radar) => {
     viewer.value.entities.remove(radar);
   });
@@ -2056,6 +2091,13 @@ function loadsatellite() {//tle 卫星实例
     viewer.value.dataSources.add(dataSource);
     // viewer.value.flyTo(dataSource);
   });
+}
+// 示例函数，将输入的字符串值转换为数字
+function convertToNumber(value) {
+  return parseFloat(value);
+}
+function showradardialog() {
+  dialogFormVisible.value = true;
 }
 </script>
 <style>

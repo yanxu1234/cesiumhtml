@@ -69,25 +69,36 @@
           </el-menu-item-group>
         </el-sub-menu>
 
-        <el-menu-item index="5">
+        <el-menu-item index="5" @click="updateradarpara">
           <el-icon><Moon /></el-icon>
-          <span>雷达波束</span>
+          <span>静态雷达</span>
         </el-menu-item>
 
-        <el-menu-item index="6">
+        <el-menu-item index="6" @click="showsatellite">
           <el-icon><Sunny /></el-icon>
-          <span>动态目标</span>
+          <span>卫星轨道</span>
         </el-menu-item>
 
         <el-menu-item index="7">
          <el-icon><Orange /></el-icon>
-          <span>静态目标</span>
+          <span>飞机航迹</span>
         </el-menu-item>
         
-        <el-menu-item index="/test"  @click="this.$router.push('/Home')">
+        <el-menu-item index="/test"  @click="">
          <el-icon><Orange /></el-icon>
           <span>数据管理</span>
         </el-menu-item>
+
+        <el-menu-item index="/test"  @click="">
+         <el-icon><Orange /></el-icon>
+          <span>图表分析</span>
+        </el-menu-item>
+
+        <el-menu-item index="/test"  @click="">
+         <el-icon><Orange /></el-icon>
+          <span>常见效果</span>
+        </el-menu-item>
+
       </el-menu>
     </el-col>
   </el-row>
@@ -95,9 +106,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref ,nextTick,computed} from 'vue';
+import { ref ,nextTick,computed,getCurrentInstance } from 'vue';
 import store from '../stores/store.js';
-
+import eventBus from '../stores/eventBus.js';
 
 // 访问状态
 const isCreatingMenuItem = computed(() => store.state.isCreatingMenuItem);
@@ -272,5 +283,11 @@ function measureLine() {
 }
 function measurePolygn() {
    updateIsCreatingMenuItem(12);
+}
+function updateradarpara() {
+   eventBus.emit("updateradar");
+}
+function showsatellite() {
+   eventBus.emit("showsatellite");
 }
 </script>
