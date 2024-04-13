@@ -99,6 +99,45 @@
       </div>
     </template>
   </el-dialog>
+    <el-dialog v-model="dialogsatelliteVisible" title="卫星TLE" width="600" style="background-color: #f0f0f0;">
+    <el-form :model="form">
+  <el-col :span="24">
+    <el-form :model="formsatellite" :label-width="formLabelWidth" inline>
+       <el-form-item label="ID" :label-width=60>
+        <el-input v-model="formsatellite.name" autocomplete="off" style="width: 350px;"/>
+      </el-form-item>
+      <el-form-item label="Line1" :label-width=60>
+        <el-input v-model="formsatellite.line1" autocomplete="off" style="width: 500px;"/>
+      </el-form-item>
+      <el-form-item label="Line2" :label-width=60>
+        <el-input v-model="formsatellite.line2" autocomplete="off" style="width: 500px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+    </el-form>
+    <template  #footer>
+      <div>
+        <el-button @click="dialogsatelliteVisible = false">取消</el-button>
+        <el-button type="primary" @click="() => { confirmsatellite(true); dialogsatelliteVisible = false; }"> 确认 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+  <el-dialog v-model="dialogselectedOptions" title="常用效果" width="400" style="background-color: #f0f0f0;">
+   <el-checkbox-group  v-model="selectedOptions" @change="handleCheckboxChange"  style="margin-bottom: 10px;">
+      <el-checkbox label="中国边界"  size="medium"/>
+      <el-checkbox label="经纬网格" size="medium" />
+      <el-checkbox label="地球自转" size="medium"/>
+      <el-checkbox label="开启大气" size="medium"/>
+      <el-checkbox label="开启昼夜" size="medium"/>
+      <el-checkbox label="雨天天气" size="medium"/>
+      <el-checkbox label="雪天天气" size="medium"/>
+      <el-checkbox label="星空背景" size="medium"/>
+      <el-checkbox label="显示太阳" size="medium"/>
+      <el-checkbox label="时间进度" size="medium"/>
+      <el-checkbox label="动画控制器" size="medium"/>
+    </el-checkbox-group>
+
+  </el-dialog>
    
   </div>
   <div
@@ -141,6 +180,11 @@ const plane = ref(null); // 响应式的飞机实例
 const chinaDataSource = ref(null); // 响应式的中国数据源实例
 const satellitedata = ref(null);
 const labelprovince = ref([]); //省份标签实例
+const showlong = ref(null);//经纬网格实体
+const showlat = ref(null);//经纬网格实体
+const showlongs = ref([]);
+const showlats = ref([]);
+
 
 const points = ref([]);//存储点实体数组
 const lines = ref([]);//存储线实体数组
@@ -170,7 +214,6 @@ const entitys = ref([]);
 const _resultTip = ref([]);
 
 //tle卫星
-
 let tleData = ref([]);
 
 let scale = 1;
@@ -180,6 +223,8 @@ var endPosition;
 
 // const dialogTableVisible = ref(false)
 const dialogFormVisible = ref(false)
+const dialogsatelliteVisible = ref(false)
+const dialogselectedOptions=ref(false)
 const formLabelWidth = '600px'
 
 const form = reactive({//雷达参数对话框
@@ -198,7 +243,13 @@ const form = reactive({//雷达参数对话框
   color: '',
 
 })
+const formsatellite = reactive({//卫星参数对话框
+  name: null,
+  line1: null,
+  line2: null
+})
 
+const  selectedOptions=ref([]) // 用于存储选中的选项
 
 onMounted(() => {
   initializeCesium();
@@ -206,8 +257,13 @@ onMounted(() => {
     showradardialog();
   });
  eventBus.on("showsatellite", () => {
-    loadsatellite();
-  });
+   showsatellitedialog();
+
+ });
+ eventBus.on("showselectoptions", () => {
+   showselectoptionsdialog();
+
+ });
   watch(isCreatingMenuItem, (newVal) => {
     if (newVal === -1) {
       if(handleArr.value.length > 0){
@@ -397,7 +453,7 @@ function initializeCesium() {
   viewer.value.scene.fxaa = true;
   viewer.value.scene.postProcessStages.fxaa.enabled = true;
 
-  for (let lang = -180; lang <= 180; lang += 45) {
+    for (let lang = -180; lang <= 180; lang += 45) {
     let text = "";
     if (lang === 0) {
       text = "0";
@@ -409,7 +465,7 @@ function initializeCesium() {
     if (lang === 180) {
       text = "180°";
     }
-    viewer.value.entities.add({
+    showlong.value=viewer.value.entities.add({
       position: Cesium.Cartesian3.fromDegrees(lang, 0),
       polyline: {
         positions: Cesium.Cartesian3.fromDegreesArray([
@@ -430,9 +486,11 @@ function initializeCesium() {
         fillColor: Cesium.Color.WHITE,
       },
     });
+      showlong.value.show = false;
+      showlongs.value.push(showlong.value);
   }
-
-  //纬度
+  showlongs.value.show = false;
+  //纬度网格
   let langS = [];
   for (let lang = -180; lang <= 180; lang += 5) {
     langS.push(lang);
@@ -445,7 +503,7 @@ function initializeCesium() {
       text = "";
     }
 
-    viewer.value.entities.add({
+   showlat.value= viewer.value.entities.add({
       position: Cesium.Cartesian3.fromDegrees(0, lat),
       polyline: {
         positions: Cesium.Cartesian3.fromDegreesArray(
@@ -465,8 +523,12 @@ function initializeCesium() {
         font: "12px sans-serif",
         fillColor: Cesium.Color.WHITE,
       },
-    });
+   });
+    showlat.value.show = false;
+      showlats.value.push(showlat.value);
+    
   }
+
   // // 将摄像机定位到合肥
   viewer.value.scene.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(117.283043, 31.861191, 6070050),
@@ -1083,12 +1145,12 @@ function showPlaneglb() {
 function hidePlaneglb() {
   plane.value.model.show = false;
 }
-function showFlightPath() {
-  line.value.show = true;
-}
-function hideFlightPath() {
-  line.value.show = false;
-}
+// function showFlightPath() {
+//   line.value.show = true;
+// }
+// function hideFlightPath() {
+//   line.value.show = false;
+// }
 function showChinaEdge() {
   chinaDataSource.value.show = true;
   labelprovince.value.forEach((label) => {
@@ -1109,7 +1171,7 @@ function change3D() {
   sceneMode.value = Cesium.SceneMode.SCENE2D; // 切换为三维场景模式
   viewer.value.scene.morphTo3D(1);
 }
-function confirm() {
+function confirm() {//画雷达参数
 
 // 在需要的时候，将参数转换为number类型
 form.longitude = convertToNumber(form.longitude);
@@ -2074,12 +2136,15 @@ function getPointFromWindowPoint(point){
         return d * (1 + fl * (h1 * sf * (1 - sg) - h2 * (1 - sf) * sg));
 }
 
-function loadsatellite() {//tle 卫星实例
+function confirmsatellite() {//tle 卫星实例
+  // var tle = [{
+  //   name: '007',
+  //   tle1: '1 25544U 98067A   19156.50900463  .00003075  00000-0  59442-4 0  9992',
+  //   tle2:'2 25544  51.6433  59.2583 0008217  16.4489 347.6017 15.51174618173442' }];
   var tle = [{
-    name: '007',
-    tle1: '1 25544U 98067A   19156.50900463  .00003075  00000-0  59442-4 0  9992',
-    tle2:'2 25544  51.6433  59.2583 0008217  16.4489 347.6017 15.51174618173442' }];
-  console.log(tle[0]);
+    name: formsatellite.name,
+    tle1: formsatellite.line1,
+    tle2:formsatellite.line2 }];
   var starttime = new Date("2024-04-03 10:15:00");
   var endtime = new Date("2024-04-30 10:15:00");
 
@@ -2099,6 +2164,47 @@ function convertToNumber(value) {
 function showradardialog() {
   dialogFormVisible.value = true;
 }
+function showsatellitedialog() {
+  dialogsatelliteVisible.value = true;
+}
+function showselectoptionsdialog() {
+  dialogselectedOptions.value = true;
+}
+
+
+function  handleCheckboxChange(checkedOptions) {
+      // 在选项改变时触发的响应函数
+      console.log('选中的选项：', checkedOptions);
+      
+      // 可以根据选项的值进行相应的逻辑处理
+      if (checkedOptions.includes('中国边界')) {
+        // 选项1被选中时执行的逻辑
+        showChinaEdge();
+  }
+         if (!checkedOptions.includes('中国边界')) {
+           hideChinaEdge();
+      }
+      if (checkedOptions.includes('经纬网格')) {
+      showlongs.value.forEach((showlong) => {
+    showlong.show=true;
+      });
+    showlats.value.forEach((showlat) => {
+    showlat.show=true;
+   });
+      }
+  if (!checkedOptions.includes('经纬网格')) {
+    showlongs.value.forEach((showlong) => {
+    showlong.show=false;
+      });
+    showlats.value.forEach((showlat) => {
+    showlat.show=false;
+   });
+    
+      }
+      if (checkedOptions.includes('选项3')) {
+        // 选项3被选中时执行的逻辑
+      }
+    }
 </script>
 <style>
 #cesiumContainer {
@@ -2138,4 +2244,5 @@ function showradardialog() {
   pointer-events: none;
   border-radius: 4px;
 }
+
 </style>

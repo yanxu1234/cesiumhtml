@@ -1,10 +1,10 @@
 <template>
-  <div style="width: 150px; height: 100%;">
+  <div style="width: 160px; height: 100%;">
     <el-row class="tac">
     <el-col :span="24">
       
       <el-menu
-      style="min-height: 572px; overflow-y: scroll;max-height: 572px;"
+      style="height:572px;overflow-y: scroll;"
         active-text-color="#ffd04b"
         background-color="#545c64"
         class="el-menu-vertical-demo"
@@ -31,13 +31,7 @@
             <el-menu-item index="0-7" @click="showattackarrow"><el-icon><CaretRight /></el-icon>攻击箭头</el-menu-item>
             <el-menu-item index="0-8" @click="showpincerarrow"><el-icon><CaretRight /></el-icon>钳形箭头</el-menu-item>
           </el-menu-item-group>
-          <!-- <el-menu-item-group title="Group Two">
-            <el-menu-item index="1-3">item three</el-menu-item>
-          </el-menu-item-group>
-          <el-sub-menu index="1-4">
-            <template #title>item four</template>
-            <el-menu-item index="1-4-1">item one</el-menu-item>
-          </el-sub-menu> -->
+          
         </el-sub-menu>
 
         <el-sub-menu index="1">
@@ -56,7 +50,7 @@
           <span>三维态势</span>
         </el-menu-item>
 
-         <el-sub-menu index="4" default-opened>
+         <el-sub-menu index="4" >
           <template #title><el-icon><icon-menu/></el-icon>
             <span>实体</span>
           </template>
@@ -84,20 +78,22 @@
           <span>飞机航迹</span>
         </el-menu-item>
         
-        <el-menu-item index="/test"  @click="">
+       <el-menu-item index="8"  @click="showselectoptions">
+         <el-icon><Orange /></el-icon>
+          <span>常见效果</span>
+        </el-menu-item>
+
+        <el-menu-item index="/test"  @click="this.$router.push('/Home')">
          <el-icon><Orange /></el-icon>
           <span>数据管理</span>
         </el-menu-item>
 
-        <el-menu-item index="/test"  @click="">
+        <el-menu-item index="10"  @click="">
          <el-icon><Orange /></el-icon>
           <span>图表分析</span>
         </el-menu-item>
 
-        <el-menu-item index="/test"  @click="">
-         <el-icon><Orange /></el-icon>
-          <span>常见效果</span>
-        </el-menu-item>
+        
 
       </el-menu>
     </el-col>
@@ -289,5 +285,8 @@ function updateradarpara() {
 }
 function showsatellite() {
    eventBus.emit("showsatellite");
+}
+function showselectoptions() {
+  eventBus.emit("showselectoptions");
 }
 </script>
