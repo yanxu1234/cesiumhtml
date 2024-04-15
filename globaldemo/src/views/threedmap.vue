@@ -166,6 +166,8 @@ import Entitys from '../stores/entitys.js';
 import StraightArrow from '../stores/StraightArrow';
 import AttackArrow from '../stores/AttackArrow';
 import PincerArrow from '../stores/PincerArrow';
+import Rain from '../stores/Rain';
+import Snow from '../stores/Snow';
 
 import eventBus from '../stores/eventBus.js';
 
@@ -249,7 +251,7 @@ const formsatellite = reactive({//卫星参数对话框
   line2: null
 })
 
-const  selectedOptions=ref([]) // 用于存储选中的选项
+const selectedOptions = ref(['时间进度','动画控制器']) // 用于存储选中的选项
 
 onMounted(() => {
   initializeCesium();
@@ -398,8 +400,6 @@ onMounted(() => {
   iframe.setAttribute("src", "");
 });
 
-
-
 function initializeCesium() {
   // cesium token
   Cesium.Ion.defaultAccessToken =
@@ -435,10 +435,19 @@ function initializeCesium() {
     //     shadows: false,
     //     //展示数据版权属性
     CreditsDisplay: false,
+     clock:new Cesium.Clock({
+  startTime: Cesium.JulianDate.fromDate(new Date()), // 设置起始时间
+  currentTime: Cesium.JulianDate.fromDate(new Date()), // 设置当前时间
+  clockRange: Cesium.ClockRange.LOOP_STOP, // 设置循环模式为循环停止
+  multiplier: 1, // 设置时间流逝速度为1，即正常速度
+  shouldAnimate: true // 启用时钟动画
+}),
   });
   //去除版权信息
   viewer.value._cesiumWidget._creditContainer.style.display = "none";
-  
+  viewer.value.scene.globe.showGroundAtmosphere = false;//默认关闭大气
+  viewer.value.scene.skyBox.show = false;//默认关闭星空
+     viewer.value.scene.sun.show = false;//默认关闭太阳
   entitys.value = new Entitys(viewer.value);
   _resultTip.value=entitys.value.createMsgTip();
   // viewer.value.dataSources.add(
@@ -2007,8 +2016,6 @@ function onMouseClick44() { //画坦克
   }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 }
-
-
 //清除所有实体
 function clear() {
   points.value.forEach((point) => {
@@ -2170,8 +2177,30 @@ function showsatellitedialog() {
 function showselectoptionsdialog() {
   dialogselectedOptions.value = true;
 }
+const previousTime = ref(null);
+let eventListeners = []; // 用于存储添加地球自转的事件监听器，不是响应式变量
+function onTick(){
+		var spinRate = 1;
+		var currentTime = viewer.value.clock.currentTime.secondsOfDay;
+		var delta = (currentTime - previousTime.value) / 1000;
+		previousTime.value = currentTime;
+		viewer.value.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, -spinRate * delta);
+	};
+function earthRotation() {
+  previousTime.value = viewer.value.clock.currentTime.secondsOfDay;
+  const eventListener = onTick; // 假设 onTick 是您的事件处理函数
+  viewer.value.clock.onTick.addEventListener(eventListener);
+  eventListeners.push(eventListener); // 将事件监听器添加到数组中
+}
 
-
+function removeEarthRotation() {
+  for (const eventListener of eventListeners) {
+    viewer.value.clock.onTick.removeEventListener(eventListener);
+  }
+  eventListeners = []; // 清空事件监听器数组
+}
+let theRain = null;
+let theSnow = null;
 function  handleCheckboxChange(checkedOptions) {
       // 在选项改变时触发的响应函数
       console.log('选中的选项：', checkedOptions);
@@ -2181,7 +2210,7 @@ function  handleCheckboxChange(checkedOptions) {
         // 选项1被选中时执行的逻辑
         showChinaEdge();
   }
-         if (!checkedOptions.includes('中国边界')) {
+         else{
            hideChinaEdge();
       }
       if (checkedOptions.includes('经纬网格')) {
@@ -2192,18 +2221,80 @@ function  handleCheckboxChange(checkedOptions) {
     showlat.show=true;
    });
       }
-  if (!checkedOptions.includes('经纬网格')) {
+  else {
     showlongs.value.forEach((showlong) => {
     showlong.show=false;
       });
     showlats.value.forEach((showlat) => {
     showlat.show=false;
    });
-    
       }
-      if (checkedOptions.includes('选项3')) {
+      if (checkedOptions.includes('地球自转')) {
         // 选项3被选中时执行的逻辑
+        earthRotation();
+  }
+      else{
+        removeEarthRotation();
+
+  }
+  if (checkedOptions.includes('开启大气')) {
+    viewer.value.scene.globe.showGroundAtmosphere = true;
+  }
+      else{
+        viewer.value.scene.globe.showGroundAtmosphere= false;
       }
+  if (checkedOptions.includes('开启昼夜')) {
+        viewer.value.scene.globe.enableLighting = true;
+  }
+      else{
+viewer.value.scene.globe.enableLighting = false;
+  }
+  if (checkedOptions.includes('雨天天气')) {
+       if (!theRain) {
+        theRain = new Rain(viewer.value);
+    }
+  }
+    else{
+       if (theRain) {
+        theRain.remove();
+        theRain = null;
+    }
+  }
+       if (checkedOptions.includes('雪天天气')) {
+       if (!theSnow) {
+        theSnow = new Snow(viewer.value);
+    }
+  }
+    else{
+       if (theSnow) {
+        theSnow.remove();
+        theSnow = null;
+    }
+  }
+       if (checkedOptions.includes('星空背景')) {
+        viewer.value.scene.skyBox.show = true;
+  }
+      else{
+  viewer.value.scene.skyBox.show = false;
+  }
+    if (checkedOptions.includes('显示太阳')) {
+       viewer.value.scene.sun.show = true;
+  }
+      else{
+         viewer.value.scene.sun.show = false;
+  }
+   if (checkedOptions.includes('时间进度')) {
+      viewer.value.timeline.container.style.display = 'block';
+  }
+      else{
+        viewer.value.timeline.container.style.display = 'none';
+  }
+   if (checkedOptions.includes('动画控制器')) {
+       viewer.value.animation.container.style.display = 'block';
+  }
+      else{
+            viewer.value.animation.container.style.display = 'none';
+  }
     }
 </script>
 <style>
