@@ -21,7 +21,7 @@
              <el-icon> <Place /></el-icon>
             <span @click="updatedigital">标绘</span>
           </template>
-          <el-menu-item-group title="Group One">
+          <el-menu-item-group title="Draw">
             <el-menu-item index="0-1" @click="showpoint"><el-icon><CaretRight /></el-icon>点</el-menu-item>
             <el-menu-item index="0-2" @click="showline"><el-icon><CaretRight /></el-icon>线</el-menu-item>
             <el-menu-item index="0-3" @click="showpolygon"><el-icon><CaretRight /></el-icon>多边形</el-menu-item>
@@ -38,7 +38,7 @@
           <template #title><el-icon><Position /></el-icon>
             <span @click="updatedigital">测量</span>
           </template>
-          <el-menu-item-group title="Group Two">
+          <el-menu-item-group title="Measure">
             <el-menu-item index="1-1" @click="measureLine"><el-icon><CaretRight /></el-icon>距离</el-menu-item>
             <el-menu-item index="1-2" @click="measurePolygn"><el-icon><CaretRight /></el-icon>面积</el-menu-item>
           </el-menu-item-group>
@@ -54,7 +54,7 @@
           <template #title><el-icon><icon-menu/></el-icon>
             <span>实体</span>
           </template>
-          <el-menu-item-group title="Group One" >
+          <el-menu-item-group title="Icon" >
             <el-menu-item index="4-1" @click="showplane" >
               <el-icon><CaretRight /></el-icon>飞机</el-menu-item>
             <el-menu-item index="4-2" @click="showmissile"><el-icon><CaretRight /></el-icon>导弹</el-menu-item>
@@ -73,7 +73,7 @@
           <span>卫星轨道</span>
         </el-menu-item>
 
-        <el-menu-item index="7">
+        <el-menu-item index="7" @click="showplaneop">
          <el-icon><Orange /></el-icon>
           <span>飞机航迹</span>
         </el-menu-item>
@@ -288,5 +288,8 @@ function showsatellite() {
 }
 function showselectoptions() {
   eventBus.emit("showselectoptions");
+}
+function showplaneop() {
+  eventBus.emit("showplaneop");
 }
 </script>

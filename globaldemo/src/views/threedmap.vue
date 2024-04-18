@@ -1,19 +1,18 @@
-<template>
-   
-  <div style="margin: 10px 5px; width: 100%; height: 100%">
-    <el-button type="primary" @click="showFlightPath">显示飞机轨迹</el-button>
-    <el-button type="primary" @click="hideFlightPath">隐藏飞机轨迹</el-button>
-    <el-button type="primary" @click="showChinaEdge">显示中国边界</el-button>
-    <el-button type="primary" @click="hideChinaEdge">隐藏中国边界</el-button>
-    <el-button type="primary" @click="change2D">二维显示</el-button>
-    <el-button type="primary" @click="change3D">三维显示</el-button>
+<template>  
+  <div style="display: flex;">
+     <div
+    id="cesiumContainer"
+    style="height: 575px; width: 95%; position: relative; z-index: 1"
+  >
+  <div> <div id="planeinfo" style="position: absolute; z-index: 10"></div></div>
+ 
+    <div id="cesiumtooltip" style="position: absolute; z-index: 99999"></div>
+    <!-- <div id="planerouteinfo " style="position: absolute; z-index: 99999;;">111111 </div> -->
+  </div>
+   <div style="margin: 10px 5px; width: 5%; flex-direction: column;">
     <el-button type="primary" @click="clear">一键清除</el-button>
-    <el-button type="primary" @click="loadsatellite">加载卫星</el-button>
-    <!-- <el-button type="primary" @call-function="test">测试</el-button> -->
-    
-    <!-- <el-button id="editbtn" type="primary" @click="updateradar">更改雷达参数</el-button> -->
-    <!-- <el-button type="primary" @click="dialogFormVisible = true">更改雷达参数</el-button> -->
-
+    <el-button type="primary" @click="test">test</el-button>
+     
       <el-dialog v-model="dialogFormVisible" title="雷达参数" width="600" style="background-color: #f0f0f0;">
     <el-form :model="form">
      <el-row>
@@ -100,7 +99,7 @@
     </template>
   </el-dialog>
     <el-dialog v-model="dialogsatelliteVisible" title="卫星TLE" width="600" style="background-color: #f0f0f0;">
-    <el-form :model="form">
+    <el-form :model="formsatellite">
   <el-col :span="24">
     <el-form :model="formsatellite" :label-width="formLabelWidth" inline>
        <el-form-item label="ID" :label-width=60>
@@ -134,22 +133,63 @@
       <el-checkbox label="星空背景" size="medium"/>
       <el-checkbox label="显示太阳" size="medium"/>
       <el-checkbox label="时间进度" size="medium"/>
-      <el-checkbox label="动画控制器" size="medium"/>
+      <el-checkbox label="动画控制" size="medium"/>
+      <el-checkbox label="3D/2D" size="medium"/>
+
     </el-checkbox-group>
-
   </el-dialog>
-   
+   <el-dialog v-model="dialogplaneVisible" title="航迹参数" width="600" style="background-color: #f0f0f0;">
+    <el-form :model="formplane">
+        <el-row>
+  <el-col :span="24">
+    <el-form :model="formplane" :label-width="formLabelWidth" inline>
+      <el-form-item label="起点经度" :label-width=80>
+        <el-input v-model="formplane.beginlongitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="纬度" :label-width=60>
+        <el-input v-model="formplane.beginlatitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="高度" :label-width=60>
+        <el-input v-model="formplane.beginaltitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+ <el-row>
+  <el-col :span="24">
+    <el-form :model="formplane" :label-width="formLabelWidth" inline>
+      <el-form-item label="终点经度" :label-width=80>
+        <el-input v-model="formplane.endlongitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="纬度" :label-width=60>
+        <el-input v-model="formplane.endlatitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+      <el-form-item label="高度" :label-width=60>
+        <el-input v-model="formplane.endaltitude" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+<el-row>
+  <el-col :span="24">
+    <el-form :model="formplane" :label-width="formLabelWidth" inline>
+      <el-form-item label="航迹点数量" :label-width=80 >
+        <el-input v-model="formplane.planepointnumber" autocomplete="off" style="width: 80px;"/>
+      </el-form-item>
+    </el-form>
+  </el-col>
+</el-row>
+    </el-form>
+    <template  #footer>
+      <div>
+        <el-button @click="dialogplaneVisible = false">取消</el-button>
+        <el-button type="primary" @click="() => { confirmplane(true); dialogplaneVisible = false; }"> 确认 </el-button>
+      </div>
+    </template>
+  </el-dialog>
   </div>
-  <div
-    id="cesiumContainer"
-    style="height: 522px; width: 100%; position: relative; z-index: 1"
-  >
-  <div> <div id="planeinfo" style="position: absolute; z-index: 10"></div></div>
+  </div>
  
-    <div id="cesiumtooltip" style="position: absolute; z-index: 99999"></div>
-    <!-- <div id="planerouteinfo " style="position: absolute; z-index: 99999;;">111111 </div> -->
-  </div>
-
 </template>
 
 <script setup>
@@ -226,7 +266,8 @@ var endPosition;
 // const dialogTableVisible = ref(false)
 const dialogFormVisible = ref(false)
 const dialogsatelliteVisible = ref(false)
-const dialogselectedOptions=ref(false)
+const dialogselectedOptions = ref(false)
+const dialogplaneVisible=ref(false)
 const formLabelWidth = '600px'
 
 const form = reactive({//雷达参数对话框
@@ -245,13 +286,22 @@ const form = reactive({//雷达参数对话框
   color: '',
 
 })
+const formplane = reactive({//航迹参数对话框
+  beginlongitude: 0,
+  beginlatitude: 0,
+  beginaltitude:0,
+  endlongitude: 0,
+  endaltitude:0,
+  endlatitude: 0,
+  planepointnumber:0
+})
 const formsatellite = reactive({//卫星参数对话框
   name: null,
   line1: null,
   line2: null
 })
 
-const selectedOptions = ref(['时间进度','动画控制器']) // 用于存储选中的选项
+const selectedOptions = ref(['时间进度','动画控制','3D/2D']) // 用于存储选中的选项
 
 onMounted(() => {
   initializeCesium();
@@ -264,7 +314,9 @@ onMounted(() => {
  });
  eventBus.on("showselectoptions", () => {
    showselectoptionsdialog();
-
+ });
+ eventBus.on("showplaneop", () => {
+   showpalneopdialog();
  });
   watch(isCreatingMenuItem, (newVal) => {
     if (newVal === -1) {
@@ -445,6 +497,16 @@ function initializeCesium() {
   });
   //去除版权信息
   viewer.value._cesiumWidget._creditContainer.style.display = "none";
+  viewer.value.scene.skyBox = new Cesium.SkyBox({
+                sources: {
+                    positiveX: 'src/assets/skybox/00h+00.jpg',
+                    negativeX: 'src/assets/skybox/12h+00.jpg',
+                    positiveY: 'src/assets/skybox/06h+00.jpg',
+                    negativeY: 'src/assets/skybox/18h+00.jpg',
+                    positiveZ: 'src/assets/skybox/06h+90.jpg',
+                    negativeZ: 'src/assets/skybox/06h-90.jpg',
+                }
+            });
   viewer.value.scene.globe.showGroundAtmosphere = false;//默认关闭大气
   viewer.value.scene.skyBox.show = false;//默认关闭星空
      viewer.value.scene.sun.show = false;//默认关闭太阳
@@ -1148,18 +1210,6 @@ function parabolaFlowInit(_viewer) {
   }
 }
 
-function showPlaneglb() {
-  plane.value.model.show = true;
-}
-function hidePlaneglb() {
-  plane.value.model.show = false;
-}
-// function showFlightPath() {
-//   line.value.show = true;
-// }
-// function hideFlightPath() {
-//   line.value.show = false;
-// }
 function showChinaEdge() {
   chinaDataSource.value.show = true;
   labelprovince.value.forEach((label) => {
@@ -2018,6 +2068,10 @@ function onMouseClick44() { //画坦克
 }
 //清除所有实体
 function clear() {
+  pointEntities.value.forEach((pointentity) => {
+    viewer.value.entities.remove(pointentity);
+  });
+  pointEntities.value = [];
   points.value.forEach((point) => {
     viewer.value.entities.remove(point);
   });
@@ -2177,9 +2231,12 @@ function showsatellitedialog() {
 function showselectoptionsdialog() {
   dialogselectedOptions.value = true;
 }
+function showpalneopdialog() {
+  dialogplaneVisible.value = true;
+}
 const previousTime = ref(null);
 let eventListeners = []; // 用于存储添加地球自转的事件监听器，不是响应式变量
-function onTick(){
+function onTick(){//地球自转逻辑
 		var spinRate = 1;
 		var currentTime = viewer.value.clock.currentTime.secondsOfDay;
 		var delta = (currentTime - previousTime.value) / 1000;
@@ -2192,7 +2249,6 @@ function earthRotation() {
   viewer.value.clock.onTick.addEventListener(eventListener);
   eventListeners.push(eventListener); // 将事件监听器添加到数组中
 }
-
 function removeEarthRotation() {
   for (const eventListener of eventListeners) {
     viewer.value.clock.onTick.removeEventListener(eventListener);
@@ -2204,7 +2260,6 @@ let theSnow = null;
 function  handleCheckboxChange(checkedOptions) {
       // 在选项改变时触发的响应函数
       console.log('选中的选项：', checkedOptions);
-      
       // 可以根据选项的值进行相应的逻辑处理
       if (checkedOptions.includes('中国边界')) {
         // 选项1被选中时执行的逻辑
@@ -2271,7 +2326,8 @@ viewer.value.scene.globe.enableLighting = false;
         theSnow = null;
     }
   }
-       if (checkedOptions.includes('星空背景')) {
+  if (checkedOptions.includes('星空背景')) {
+          
         viewer.value.scene.skyBox.show = true;
   }
       else{
@@ -2289,12 +2345,122 @@ viewer.value.scene.globe.enableLighting = false;
       else{
         viewer.value.timeline.container.style.display = 'none';
   }
-   if (checkedOptions.includes('动画控制器')) {
+   if (checkedOptions.includes('动画控制')) {
        viewer.value.animation.container.style.display = 'block';
   }
       else{
             viewer.value.animation.container.style.display = 'none';
   }
+   if (checkedOptions.includes('3D/2D')) {
+       sceneMode.value = Cesium.SceneMode.SCENE2D; // 切换为三维场景模式
+  viewer.value.scene.morphTo3D(1);
+  }
+      else{
+            sceneMode.value = Cesium.SceneMode.SCENE3D; // 切换为2维场景模式
+  viewer.value.scene.morphTo2D(1);
+  }
+}
+ var pointEntities = ref([]);
+function confirmplane() {
+  const startLon = convertToNumber(formplane.beginlongitude);
+  const startLat = convertToNumber(formplane.beginlatitude);
+  const endLon = convertToNumber(formplane.endlongitude);
+  const endLat = convertToNumber(formplane.endlatitude);
+  const startalt=convertToNumber(formplane.beginaltitude);
+  const endalt=convertToNumber(formplane.endaltitude);
+
+  var positions = []; // 存储所有过程点的数组
+
+  var animationDuration = 10; // 动画持续时间（秒）
+  var numPoints = 100; // 总的过程点数量
+  var numPointsPerStep = convertToNumber(formplane.planepointnumber); // 每次生成的过程点数量
+
+  var lonStep = (endLon - startLon) / (numPoints - 1); // 经度每个过程点的增量
+  var latStep = (endLat - startLat) / (numPoints - 1); // 纬度每个过程点的增量
+  var height =(endalt- startalt) / (numPoints - 1);
+
+  var currentIndex = 0;
+  var currentStep = 0;
+
+  var startTime = Cesium.JulianDate.fromDate(new Date());
+  var stopTime = Cesium.JulianDate.addSeconds(startTime, animationDuration, new Cesium.JulianDate());
+
+  viewer.value.clock.startTime = startTime.clone();
+  viewer.value.clock.stopTime = stopTime.clone();
+  viewer.value.clock.currentTime = startTime.clone();
+  viewer.value.timeline.zoomTo(startTime, stopTime);
+
+  viewer.value.clock.onTick.addEventListener(function (clock) {
+    var elapsedTime = Cesium.JulianDate.secondsDifference(clock.currentTime, startTime);
+    var totalSteps = Math.floor((elapsedTime / animationDuration) * (numPoints - numPointsPerStep));
+    currentStep = Math.min(totalSteps, numPoints - numPointsPerStep);
+
+    positions = generatePoints(currentStep);
+
+    for (var i = 0; i < pointEntities.value.length; i++) {
+      if (i < positions.length) {
+        if ((i + 1) % numPointsPerStep === 0) {
+          // 每10个点的最后一个点应用贴图
+          pointEntities.value[i].billboard.image = '/plane.png';
+          pointEntities.value[i].billboard.rotation = computeRotation(startLon, startLat, endLon, endLat);
+        } else {
+          // 其他点不应用贴图
+          pointEntities.value[i].billboard.image = undefined;
+        }
+
+        pointEntities.value[i].position = positions[i];
+        pointEntities.value[i].point.show = true;
+      } else {
+        pointEntities.value[i].point.show = false;
+      }
+    }
+  });
+
+  function generatePoints(step) {
+    var generatedPositions = [];
+
+    for (var i = step; i < step + numPointsPerStep; i++) {
+      var lon = startLon + (i * lonStep);
+      var lat = startLat + (i * latStep);
+      var hei =startalt+(i*height)
+      generatedPositions.push(Cesium.Cartesian3.fromDegrees(lon, lat, hei));
+    }
+
+    return generatedPositions;
+  }
+
+  function computeRotation(startLon, startLat, endLon, endLat) {
+    var lonDiff = endLon - startLon;
+    var latDiff = endLat - startLat;
+    var angle = Math.atan2(latDiff, lonDiff);
+
+    return -Cesium.Math.toDegrees(angle);
+  }
+
+ 
+  positions = generatePoints(currentStep);
+  for (var i = 0; i < positions.length; i++) {
+    pointEntities.value.push(viewer.value.entities.add({
+      position: positions[i],
+      point: {
+        pixelSize: 8,
+        color: Cesium.Color.RED,
+        scale: 0.2,
+      },
+      billboard: {
+        // 默认先不应用贴图
+        image: undefined,
+        scale: 0.3,
+        rotation: 0
+      },
+    }));
+  }
+
+  viewer.value.clock.shouldAnimate = true;
+}
+// 示例使用起点和终点坐标调用animate函数
+function test() {
+
     }
 </script>
 <style>

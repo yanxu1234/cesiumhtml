@@ -18,7 +18,7 @@
       Cesuim三维地球管理
     </div>
     <div style="flex: 1"></div>
-    <div style="padding-right: 20px;display: flex; justify-content: center; align-items: center; ">
+    <!-- <div style="padding-right: 20px;display: flex; justify-content: center; align-items: center; ">
       <el-dropdown>
         <span class="el-dropdown-link" >
           闫旭yanxu
@@ -31,7 +31,7 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-    </div>
+    </div> -->
   </div>
 </template>
 
