@@ -2,7 +2,7 @@
   <div style="display: flex;">
      <div
     id="cesiumContainer"
-    style="height: 575px; width: 95%; position: relative; z-index: 1"
+    style="height: 600px; width: 95%; position: relative; z-index: 1"
   >
   <div> <div id="planeinfo" style="position: absolute; z-index: 10"></div></div>
  

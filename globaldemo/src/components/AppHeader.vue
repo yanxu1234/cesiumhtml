@@ -2,6 +2,7 @@
   <div
     style="
       height: 50px;
+      width: 100%;
       line-height: 50px;
       border-bottom: 1px solid #ccc;
       display: flex;

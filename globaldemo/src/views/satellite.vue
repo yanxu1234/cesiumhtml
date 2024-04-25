@@ -5,28 +5,26 @@
       <el-button type="primary" @click="toggleSelection()">一键删除</el-button>
       <el-button type="primary">导入</el-button>
       <el-button type="primary">导出</el-button>
-    </div>
-    <div style="margin: 10px 5px">
       <el-input
         v-model="search"
         placeholder="Please input"
-        style="width: 20%"
+        style="width: 20%;margin-left:10px"
       />
       <el-tag style="margin-left: 5px" size="medium">查询</el-tag>
     </div>
   </div>
   <el-table :data="pagedTableData" style="width: 100%" max-height="465" @selection-change="handleSelectionChange">
-    <el-table-column type="selection" width="55" />
+    <el-table-column type="selection" width="30" />
     
-    <el-table-column fixed prop="id" label="批次号" />
-    <el-table-column prop="name" label="航班号" />
-    <el-table-column prop="type" label="类型" />
-    <el-table-column prop="begindate" label="出发时间" />
-    <el-table-column prop="beginstate" label="出发地" />
-    <el-table-column prop="enddate" label="到达时间" />
-    <el-table-column prop="endstate" label="目的地" />
-    <el-table-column prop="condition" label="状态" />
-    <el-table-column fixed="right" label="操作">
+    <el-table-column fixed prop="id" label="卫星编号" width="80"/>
+    <el-table-column prop="name" label="名称" width="80" />
+    <el-table-column prop="type" label="任务类型" width="70"/>
+    <el-table-column prop="begindate" label="发射时间" width="120"/>
+    <el-table-column prop="beginstate" label="发射地" width="80" />
+    <el-table-column prop="line1" label="TLE1"   />
+    <el-table-column prop="line2" label="TLE2"  />
+    <el-table-column prop="condition" label="状态" width="75"/>
+    <el-table-column fixed="right" label="操作"  width="125">
       <template #default="scope">
         <el-button size="small" @click="handleEdit(scope.$index)"
           >修改</el-button
@@ -54,23 +52,30 @@
   <el-dialog
     v-model="dialogadditem"
     title="新增数据"
-    width="400"
+    width="560"
     style="background-color: #f0f0f0"
   >
     <el-form :model="form">
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="批次号" :label-width="60">
+            <el-form-item label="卫星编号" :label-width="60">
               <el-input
                 v-model="form.id"
                 autocomplete="off"
                 style="width: 80px"
               />
             </el-form-item>
-            <el-form-item label="类型" :label-width="60">
+            <el-form-item label="名称" :label-width="60">
               <el-input
-                v-model="form.type"
+                v-model="form.name"
+                autocomplete="off"
+                style="width: 80px"
+              />
+            </el-form-item>
+              <el-form-item label="发射地" :label-width="60">
+              <el-input
+                v-model="form.beginstate"
                 autocomplete="off"
                 style="width: 80px"
               />
@@ -80,37 +85,31 @@
       </el-row>
       <el-col :span="24">
         <el-form :model="form" :label-width="formLabelWidth" inline>
-          <el-form-item label="航班号" :label-width="60">
+          <el-form-item label="任务类型" :label-width="60">
             <el-input
-              v-model="form.name"
+              v-model="form.type"
               autocomplete="off"
               style="width: 80px"
             />
           </el-form-item>
           <el-form-item label="状态" :label-width="60">
-            <el-input
-              v-model="form.condition"
-              autocomplete="off"
-              style="width: 80px"
-            />
-          </el-form-item>
+              <el-input
+                v-model="form.condition"
+                autocomplete="off"
+                style="width: 80px"
+              />
+            </el-form-item>
         </el-form>
       </el-col>
+      
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发地" :label-width="60">
+            <el-form-item label="TLE1" :label-width="60">
               <el-input
-                v-model="form.beginstate"
+                v-model="form.line1"
                 autocomplete="off"
-                style="width: 80px"
-              />
-            </el-form-item>
-            <el-form-item label="到达地" :label-width="60">
-              <el-input
-                v-model="form.endstate"
-                autocomplete="off"
-                style="width: 80px"
+                style="width: 430px"
               />
             </el-form-item>
           </el-form>
@@ -119,31 +118,31 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发时间(YYYY-MM-DD HH:mm)" :label-width="205">
+            <el-form-item label="TLE2" :label-width="60">
               <el-input
-                v-model="form.begindate"
+                v-model="form.line2"
                 autocomplete="off"
-                style="width: 110px"
+                style="width: 430px"
               />
             </el-form-item>
           </el-form>
         </el-col>
       </el-row>
-
-      <el-row>
+    <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="到达时间(YYYY-MM-DD HH:mm)" :label-width="205">
-              <el-input
-                v-model="form.enddate"
-                autocomplete="off"
-                style="width: 110px"
-              />
-            </el-form-item>
+             <el-form-item label="发射时间" :label-width="60">
+            <el-input
+              v-model="form.begindate"
+              autocomplete="off"
+              style="width: 200px"
+            />
+            <el-label style="margin-left: 10px;"> (YYYY-MM-DD HH:mm) </el-label>
+          </el-form-item>
           </el-form>
         </el-col>
       </el-row>
-      <el-row> </el-row>
+     
     </el-form>
     <template #footer>
       <div class="dialog-footer">
@@ -165,23 +164,30 @@
   <el-dialog
     v-model="dialogupdateitem"
     title="修改数据"
-    width="400"
+    width="560"
     style="background-color: #f0f0f0"
   >
     <el-form :model="formupdate">
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="批次号" :label-width="60">
+            <el-form-item label="卫星编号" :label-width="60">
               <el-input
                 v-model="formupdate.id"
                 autocomplete="off"
                 style="width: 80px"
               />
             </el-form-item>
-            <el-form-item label="类型" :label-width="60">
+            <el-form-item label="名称" :label-width="60">
               <el-input
-                v-model="formupdate.type"
+                v-model="formupdate.name"
+                autocomplete="off"
+                style="width: 80px"
+              />
+            </el-form-item>
+              <el-form-item label="发射地" :label-width="60">
+              <el-input
+                v-model="formupdate.beginstate"
                 autocomplete="off"
                 style="width: 80px"
               />
@@ -191,37 +197,31 @@
       </el-row>
       <el-col :span="24">
         <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-          <el-form-item label="航班号" :label-width="60">
+          <el-form-item label="任务类型" :label-width="60">
             <el-input
-              v-model="formupdate.name"
+              v-model="formupdate.type"
               autocomplete="off"
               style="width: 80px"
             />
           </el-form-item>
           <el-form-item label="状态" :label-width="60">
-            <el-input
-              v-model="formupdate.condition"
-              autocomplete="off"
-              style="width: 80px"
-            />
-          </el-form-item>
+              <el-input
+                v-model="formupdate.condition"
+                autocomplete="off"
+                style="width: 80px"
+              />
+            </el-form-item>
         </el-form>
       </el-col>
+      
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发地" :label-width="60">
+            <el-form-item label="TLE1" :label-width="60">
               <el-input
-                v-model="formupdate.beginstate"
+                v-model="formupdate.line1"
                 autocomplete="off"
-                style="width: 80px"
-              />
-            </el-form-item>
-            <el-form-item label="到达地" :label-width="60">
-              <el-input
-                v-model="formupdate.endstate"
-                autocomplete="off"
-                style="width: 80px"
+                style="width: 430px"
               />
             </el-form-item>
           </el-form>
@@ -230,35 +230,35 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发时间(YYYY-MM-DD HH:mm)" :label-width="205">
+            <el-form-item label="TLE2" :label-width="60">
               <el-input
-                v-model="formupdate.begindate"
+                v-model="formupdate.line2"
                 autocomplete="off"
-                style="width: 110px"
+                style="width: 430px"
               />
             </el-form-item>
           </el-form>
         </el-col>
       </el-row>
-
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="到达时间(YYYY-MM-DD HH:mm)" :label-width="205">
-              <el-input
-                v-model="formupdate.enddate"
-                autocomplete="off"
-                style="width: 110px"
-              />
-            </el-form-item>
+             <el-form-item label="发射时间" :label-width="60">
+            <el-input
+              v-model="formupdate.begindate"
+              autocomplete="off"
+              style="width: 200px"
+            />
+            <el-label style="margin-left: 10px;"> (YYYY-MM-DD HH:mm) </el-label>
+          </el-form-item>
           </el-form>
         </el-col>
       </el-row>
-      <el-row> </el-row>
+     
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogadditem = false">取消</el-button>
+        <el-button @click="dialogupdateitem = false">取消</el-button>
         <el-button
           type="primary"
           @click="
@@ -296,123 +296,130 @@ const form = reactive({
   type: "",
   begindate: "",
   beginstate: "",
-  enddate: "",
-  endstate: "",
+  line1: "",
+  line2: "",
   condition: "",
 });
-const formupdate = reactive({
+const formupdate= reactive({
   id: "",
   name: "",
   type: "",
   begindate: "",
   beginstate: "",
-  enddate: "",
-  endstate: "",
+  line1: "",
+  line2: "",
   condition: "",
 });
-
 const tableData = ref([
   {
-    id: "001",
-    name: "A001",
-    type: "无人机",
+    id: "s001",
+    name: "麒麟2号",
+    type: "导航",
     begindate: "2024-04-02 09:32",
-    beginstate: "合肥",
-    enddate: "2024-04-02 23:18",
-    endstate: "莫斯科",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
     condition: "正常",
   },
   {
-    id: "002",
-    name: "B001",
-    type: "侦察机",
-    begindate: "2024-03-02 01:21",
-    beginstate: "乌鲁木齐",
-    enddate: "2024-03-02 10:43",
-    endstate: "广州",
-    condition: "异常",
-  },
-  {
-    id: "003",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "004",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "005",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "006",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "007",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "009",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "010",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "011",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "023",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
+    id: "s002",
+    name: "天地2号",
+    type: "天气",
+    begindate: "2024-05-02 09:32",
+    beginstate: "文昌",
+    line1: "1 04400U 70034  C 83083.63882951  .70920659 +21564-4 +15010-2 0  9995",
+    line2: "2 04400 068.4206 158.6220 0013952 341.7442 018.2810 16.45622328628460",
+    condition: "正常",
+  },{
+    id: "s003",
+    name: "电信1号",
+    type: "通信",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "维护",
+  },{
+    id: "s004",
+    name: "红外3号",
+    type: "遥感",
+    begindate: "2024-04-02 09:32",
+    beginstate: "合肥",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "在轨运行",
+  },{
+    id: "s005",
+    name: "东风2号",
+    type: "军事",
+    begindate: "2024-07-02 09:32",
+    beginstate: "喀什",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "等待发射",
+  },{
+    id: "s006",
+    name: "启航5号",
+    type: "教育",
+    begindate: "2024-06-01 09:32",
+    beginstate: "南京",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "等待发射",
+  },{
+    id: "s007",
+    name: "麒麟2号",
+    type: "导航",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "正常",
+  },{
+    id: "s008",
+    name: "麒麟2号",
+    type: "导航",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "正常",
+  },{
+    id: "s009",
+    name: "麒麟2号",
+    type: "导航",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "正常",
+  },{
+    id: "s010",
+    name: "麒麟2号",
+    type: "导航",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "正常",
+  },{
+    id: "s011",
+    name: "麒麟2号",
+    type: "导航",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "正常",
+  },{
+    id: "s012",
+    name: "麒麟2号",
+    type: "导航",
+    begindate: "2024-04-02 09:32",
+    beginstate: "酒泉",
+    line1: "1 04382U 70034A   24115.82287935  .00002399  00000-0  35241-3 0  9999",
+    line2: "2 04382  68.4217 216.4594 1041497 324.7403  28.8816 13.10878190542852",
+    condition: "正常",
   },
 ]);
 const handleEdit = (index: number) => {
@@ -425,8 +432,8 @@ const handleEdit = (index: number) => {
     type,
     begindate,
     beginstate,
-    enddate,
-    endstate,
+    line1,
+    line2,
     condition,
   } = selectedRow.value;
   formupdate.id = id;
@@ -434,8 +441,8 @@ const handleEdit = (index: number) => {
   formupdate.type = type;
   formupdate.begindate = begindate;
   formupdate.beginstate = beginstate;
-  formupdate.enddate = enddate;
-  formupdate.endstate = endstate;
+  formupdate.line1 = line1;
+  formupdate.line2 = line2;
   formupdate.condition = condition;
 };
 
@@ -493,8 +500,8 @@ const confirm = () => {
     type: form.type,
     begindate: form.begindate,
     beginstate: form.beginstate,
-    enddate: form.enddate,
-    endstate: form.endstate,
+    line1: form.line1,
+    line2: form.line2,
     condition: form.condition,
   });
  
@@ -506,8 +513,8 @@ const confirmupdate = () => {
   selectedRow.value.type = formupdate.type;
   selectedRow.value.begindate = formupdate.begindate;
   selectedRow.value.beginstate = formupdate.beginstate;
-  selectedRow.value.enddate = formupdate.enddate;
-  selectedRow.value.endstate = formupdate.endstate;
+  selectedRow.value.line1 = formupdate.line1;
+  selectedRow.value.line2 = formupdate.line2;
   selectedRow.value.condition = formupdate.condition;
 };
 </script>

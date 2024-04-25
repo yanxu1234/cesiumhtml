@@ -15,18 +15,24 @@
       <el-tag style="margin-left: 5px" size="medium">查询</el-tag>
     </div>
   </div>
-  <el-table :data="pagedTableData" style="width: 100%" max-height="465" @selection-change="handleSelectionChange">
+  <el-table
+    :data="pagedTableData"
+    style="width: 100%"
+    max-height="465"
+    @selection-change="handleSelectionChange"
+  >
     <el-table-column type="selection" width="55" />
-    
-    <el-table-column fixed prop="id" label="批次号" />
-    <el-table-column prop="name" label="航班号" />
-    <el-table-column prop="type" label="类型" />
-    <el-table-column prop="begindate" label="出发时间" />
-    <el-table-column prop="beginstate" label="出发地" />
-    <el-table-column prop="enddate" label="到达时间" />
-    <el-table-column prop="endstate" label="目的地" />
-    <el-table-column prop="condition" label="状态" />
-    <el-table-column fixed="right" label="操作">
+    <el-table-column fixed prop="id" label="设备ID" />
+    <el-table-column prop="name" label="站点名称" />
+    <el-table-column prop="type" label="设备类型" />
+    <el-table-column prop="location" label="位置坐标" />
+    <el-table-column prop="beamwidth" label="波束宽度" />
+    <el-table-column prop="distance" label="探测距离" />
+    <el-table-column prop="targettype" label="目标类型" />
+    <el-table-column prop="scanmodel" label="扫描模式" />
+    <el-table-column prop="frequency" label="频率" />
+    <!-- <el-table-column prop="time" label="采集时间" /> -->
+    <el-table-column fixed="right" label="操作" width="200">
       <template #default="scope">
         <el-button size="small" @click="handleEdit(scope.$index)"
           >修改</el-button
@@ -61,14 +67,14 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="批次号" :label-width="60">
+            <el-form-item label="设备ID" :label-width="60">
               <el-input
                 v-model="form.id"
                 autocomplete="off"
                 style="width: 80px"
               />
             </el-form-item>
-            <el-form-item label="类型" :label-width="60">
+            <el-form-item label="设备类型" :label-width="60">
               <el-input
                 v-model="form.type"
                 autocomplete="off"
@@ -80,16 +86,16 @@
       </el-row>
       <el-col :span="24">
         <el-form :model="form" :label-width="formLabelWidth" inline>
-          <el-form-item label="航班号" :label-width="60">
+          <el-form-item label="站点名称" :label-width="60">
             <el-input
               v-model="form.name"
               autocomplete="off"
               style="width: 80px"
             />
           </el-form-item>
-          <el-form-item label="状态" :label-width="60">
+          <el-form-item label="频率" :label-width="60">
             <el-input
-              v-model="form.condition"
+              v-model="form.frequency"
               autocomplete="off"
               style="width: 80px"
             />
@@ -99,16 +105,16 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发地" :label-width="60">
+            <el-form-item label="波束宽度" :label-width="60">
               <el-input
-                v-model="form.beginstate"
+                v-model="form.beamwidth"
                 autocomplete="off"
                 style="width: 80px"
               />
             </el-form-item>
-            <el-form-item label="到达地" :label-width="60">
+            <el-form-item label="探测距离" :label-width="60">
               <el-input
-                v-model="form.endstate"
+                v-model="form.distance"
                 autocomplete="off"
                 style="width: 80px"
               />
@@ -119,11 +125,18 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发时间(YYYY-MM-DD HH:mm)" :label-width="205">
+            <el-form-item label="目标类型" :label-width="60">
               <el-input
-                v-model="form.begindate"
+                v-model="form.targettype"
                 autocomplete="off"
-                style="width: 110px"
+                style="width: 80px"
+              />
+            </el-form-item>
+            <el-form-item label="扫描模式" :label-width="60">
+              <el-input
+                v-model="form.scanmodel"
+                autocomplete="off"
+                style="width: 80px"
               />
             </el-form-item>
           </el-form>
@@ -133,11 +146,11 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="form" :label-width="formLabelWidth" inline>
-            <el-form-item label="到达时间(YYYY-MM-DD HH:mm)" :label-width="205">
+            <el-form-item label="位置坐标" :label-width="60">
               <el-input
-                v-model="form.enddate"
+                v-model="form.location"
                 autocomplete="off"
-                style="width: 110px"
+                style="width: 200px"
               />
             </el-form-item>
           </el-form>
@@ -172,14 +185,14 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="批次号" :label-width="60">
+            <el-form-item label="设备ID" :label-width="60">
               <el-input
                 v-model="formupdate.id"
                 autocomplete="off"
                 style="width: 80px"
               />
             </el-form-item>
-            <el-form-item label="类型" :label-width="60">
+            <el-form-item label="设备类型" :label-width="60">
               <el-input
                 v-model="formupdate.type"
                 autocomplete="off"
@@ -191,16 +204,16 @@
       </el-row>
       <el-col :span="24">
         <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-          <el-form-item label="航班号" :label-width="60">
+          <el-form-item label="站点名称" :label-width="60">
             <el-input
               v-model="formupdate.name"
               autocomplete="off"
               style="width: 80px"
             />
           </el-form-item>
-          <el-form-item label="状态" :label-width="60">
+          <el-form-item label="频率" :label-width="60">
             <el-input
-              v-model="formupdate.condition"
+              v-model="formupdate.frequency"
               autocomplete="off"
               style="width: 80px"
             />
@@ -210,16 +223,16 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发地" :label-width="60">
+            <el-form-item label="波束宽度" :label-width="60">
               <el-input
-                v-model="formupdate.beginstate"
+                v-model="formupdate.beamwidth"
                 autocomplete="off"
                 style="width: 80px"
               />
             </el-form-item>
-            <el-form-item label="到达地" :label-width="60">
+            <el-form-item label="探测距离" :label-width="60">
               <el-input
-                v-model="formupdate.endstate"
+                v-model="formupdate.distance"
                 autocomplete="off"
                 style="width: 80px"
               />
@@ -230,11 +243,18 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="出发时间(YYYY-MM-DD HH:mm)" :label-width="205">
+            <el-form-item label="目标类型" :label-width="60">
               <el-input
-                v-model="formupdate.begindate"
+                v-model="formupdate.targettype"
                 autocomplete="off"
-                style="width: 110px"
+                style="width: 80px"
+              />
+            </el-form-item>
+            <el-form-item label="扫描模式" :label-width="60">
+              <el-input
+                v-model="formupdate.scanmodel"
+                autocomplete="off"
+                style="width: 80px"
               />
             </el-form-item>
           </el-form>
@@ -244,11 +264,11 @@
       <el-row>
         <el-col :span="24">
           <el-form :model="formupdate" :label-width="formLabelWidth" inline>
-            <el-form-item label="到达时间(YYYY-MM-DD HH:mm)" :label-width="205">
+            <el-form-item label="位置坐标" :label-width="60">
               <el-input
-                v-model="formupdate.enddate"
+                v-model="formupdate.location"
                 autocomplete="off"
-                style="width: 110px"
+                style="width: 200px"
               />
             </el-form-item>
           </el-form>
@@ -258,7 +278,7 @@
     </el-form>
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="dialogadditem = false">取消</el-button>
+        <el-button @click="dialogupdateitem = false">取消</el-button>
         <el-button
           type="primary"
           @click="
@@ -285,7 +305,7 @@ const pageSize = ref(10);
 const small = ref(true);
 const background = ref(false);
 const disabled = ref(false);
-const selectedRow = ref();//要未定义 不能把对象直接赋值给对象
+const selectedRow = ref(); //要未定义 不能把对象直接赋值给对象
 const formLabelWidth = "450px";
 const dialogadditem = ref(false);
 const dialogupdateitem = ref(false);
@@ -294,125 +314,178 @@ const form = reactive({
   id: "",
   name: "",
   type: "",
-  begindate: "",
-  beginstate: "",
-  enddate: "",
-  endstate: "",
-  condition: "",
+  location: "",
+  beamwidth: "",
+  distance: "",
+  targettype: "",
+  scanmodel: "",
+  frequency: "",
 });
 const formupdate = reactive({
   id: "",
   name: "",
   type: "",
-  begindate: "",
-  beginstate: "",
-  enddate: "",
-  endstate: "",
-  condition: "",
+  location: "",
+  beamwidth: "",
+  distance: "",
+  targettype: "",
+  scanmodel: "",
+  frequency: "",
 });
-
 const tableData = ref([
   {
-    id: "001",
-    name: "A001",
-    type: "无人机",
-    begindate: "2024-04-02 09:32",
-    beginstate: "合肥",
-    enddate: "2024-04-02 23:18",
-    endstate: "莫斯科",
-    condition: "正常",
+    id: "r001",
+    name: "合肥站",
+    type: "脉冲",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
   },
   {
-    id: "002",
-    name: "B001",
-    type: "侦察机",
-    begindate: "2024-03-02 01:21",
-    beginstate: "乌鲁木齐",
-    enddate: "2024-03-02 10:43",
-    endstate: "广州",
-    condition: "异常",
+    id: "r002",
+    name: "乌鲁木齐站",
+    type: "连续波",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "卫星",
+    scanmodel: "单点扫描",
+    frequency: "S波段",
   },
   {
-    id: "003",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "004",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "005",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "006",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "007",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "009",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "010",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "011",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
-  }, {
-    id: "023",
-    name: "C001",
-    type: "运输机",
-    begindate: "2024-06-02 11:21",
-    beginstate: "北京",
-    enddate: "2024-06-02 18:56",
-    endstate: "拉萨",
-    condition: "停止",
+    id: "r003",
+    name: "北京站",
+    type: "多普勒",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "坦克",
+    scanmodel: "跟踪扫描",
+    frequency: "X波段",
+  },
+  {
+    id: "r004",
+    name: "拉萨站",
+    type: "距离测速",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "L波段",
+  },
+  {
+    id: "r005",
+    name: "青岛站",
+    type: "合成孔径",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "轮船",
+    scanmodel: "连续扫描",
+    frequency: "C波段",
+  },
+  {
+    id: "r001",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
+  },
+  {
+    id: "r006",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "W波段",
+  },
+  {
+    id: "r007",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "Ku波段",
+  },
+  {
+    id: "r008",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "ka波段",
+  },
+  {
+    id: "r009",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
+  },
+  {
+    id: "r020",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
+  },
+  {
+    id: "r001",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
+  },
+  {
+    id: "r021",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
+  },
+  {
+    id: "r069",
+    name: "合肥站",
+    type: "相控阵",
+    location: "(107.201,45.21)",
+    beamwidth: "10°",
+    distance: "100km",
+    targettype: "飞机",
+    scanmodel: "连续扫描",
+    frequency: "X波段",
   },
 ]);
 const handleEdit = (index: number) => {
@@ -423,20 +496,22 @@ const handleEdit = (index: number) => {
     id,
     name,
     type,
-    begindate,
-    beginstate,
-    enddate,
-    endstate,
-    condition,
+    location,
+    beamwidth,
+    distance,
+    targettype,
+    scanmodel,
+    frequency,
   } = selectedRow.value;
   formupdate.id = id;
   formupdate.name = name;
   formupdate.type = type;
-  formupdate.begindate = begindate;
-  formupdate.beginstate = beginstate;
-  formupdate.enddate = enddate;
-  formupdate.endstate = endstate;
-  formupdate.condition = condition;
+  formupdate.location = location;
+  formupdate.beamwidth = beamwidth;
+  formupdate.distance = distance;
+  formupdate.targettype = targettype;
+  formupdate.scanmodel = scanmodel;
+  formupdate.frequency = frequency;
 };
 
 const deleteRow = (index: number) => {
@@ -475,39 +550,40 @@ const onAddItem = () => {
 };
 const selectedRows = ref([]); // 存储已勾选行的索引数组
 const handleSelectionChange = (rows) => {
-      selectedRows.value = rows;
-    };
-const toggleSelection = () => {//删除所有勾选的行
-    selectedRows.value.forEach((row) => {
-        const index = tableData.value.indexOf(row);
-        if (index !== -1) {
-          tableData.value.splice(index, 1);
-        }
-      });
-      selectedRows.value = [];
+  selectedRows.value = rows;
+};
+const toggleSelection = () => {
+  //删除所有勾选的行
+  selectedRows.value.forEach((row) => {
+    const index = tableData.value.indexOf(row);
+    if (index !== -1) {
+      tableData.value.splice(index, 1);
+    }
+  });
+  selectedRows.value = [];
 };
 const confirm = () => {
   tableData.value.push({
     id: form.id,
     name: form.name,
     type: form.type,
-    begindate: form.begindate,
-    beginstate: form.beginstate,
-    enddate: form.enddate,
-    endstate: form.endstate,
-    condition: form.condition,
+    location: form.location,
+    beamwidth: form.beamwidth,
+    distance: form.distance,
+    targettype: form.targettype,
+    scanmodel: form.scanmodel,
+    frequency: form.frequency,
   });
- 
-  
 };
 const confirmupdate = () => {
   selectedRow.value.id = formupdate.id;
   selectedRow.value.name = formupdate.name;
   selectedRow.value.type = formupdate.type;
-  selectedRow.value.begindate = formupdate.begindate;
-  selectedRow.value.beginstate = formupdate.beginstate;
-  selectedRow.value.enddate = formupdate.enddate;
-  selectedRow.value.endstate = formupdate.endstate;
-  selectedRow.value.condition = formupdate.condition;
+  selectedRow.value.location = formupdate.location;
+  selectedRow.value.beamwidth = formupdate.beamwidth;
+  selectedRow.value.distance = formupdate.distance;
+  selectedRow.value.targettype = formupdate.targettype;
+  selectedRow.value.scanmodel = formupdate.scanmodel;
+  selectedRow.value.frequency = formupdate.frequency;
 };
 </script>

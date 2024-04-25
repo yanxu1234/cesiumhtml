@@ -4,7 +4,7 @@
     <el-col :span="24">
       
       <el-menu
-      style="height:572px;overflow-y: scroll;"
+      style="height:605px;overflow-y: scroll;"
         active-text-color="#ffd04b"
         background-color="#545c64"
         class="el-menu-vertical-demo"
@@ -83,15 +83,15 @@
           <span>常见效果</span>
         </el-menu-item>
 
-        <el-menu-item index="/test"  @click="this.$router.push('/Home')">
+        <el-menu-item index="/test"  @click="this.$router.push('/Datamanage')">
          <el-icon><Orange /></el-icon>
           <span>数据管理</span>
         </el-menu-item>
 
-        <el-menu-item index="10"  @click="">
+        <!-- <el-menu-item index="10"  @click="">
          <el-icon><Orange /></el-icon>
           <span>图表分析</span>
-        </el-menu-item>
+        </el-menu-item> -->
 
         
 
