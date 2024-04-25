@@ -1,7 +1,7 @@
 <template>
   <div style="width: 100%">
     <div style="margin: 10px 5px; width: 100%; height: auto">
-      <el-button type="primary" @click="onAddItem">新增</el-button>
+      <el-button type="primary" @click="onAddItem">新增数据</el-button>
       <el-button type="primary" @click="toggleSelection()">一键删除</el-button>
       <el-button type="primary">导入</el-button>
       <el-button type="primary">导出</el-button>
